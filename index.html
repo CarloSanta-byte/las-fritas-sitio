@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Las Fritas — Pide tu antojo</title>
+<meta name="description" content="Pide en línea en Las Fritas Salchipapería. Para recoger en el local o a domicilio.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ============ TOPBAR ============ -->
+  <header class="topbar">
+    <div class="logo-badge" aria-hidden="true"><span>LF</span></div>
+    <div class="marca-nombre">
+      Las Fritas
+      <small>Salchipapería</small>
+    </div>
+    <button class="icono-carrito" id="btn-abrir-carrito" aria-label="Ver carrito">
+      🛒
+      <span class="badge oculto" id="badge-carrito">0</span>
+    </button>
+  </header>
+
+  <!-- ============ VISTA: PEDIR ============ -->
+  <main id="vista-pedir">
+    <section class="hero">
+      <h1 class="brillo-neon">Con hambre no<br>se piensa, se pide.</h1>
+      <p>Arma tu antojo y elige si lo recoges en el local o te lo llevamos a la puerta.</p>
+    </section>
+
+    <nav class="categorias" id="lista-categorias" aria-label="Categorías del menú"></nav>
+
+    <div id="contenedor-menu"></div>
+  </main>
+
+  <!-- ============ VISTA: MI PEDIDO ============ -->
+  <main id="vista-seguimiento" class="vista-seguimiento oculto">
+    <div class="buscador-pedido">
+      <input type="text" id="input-id-pedido" placeholder="Código de tu pedido, ej: a1b2c3d4" autocomplete="off">
+      <button class="btn btn-primario" id="btn-buscar-pedido">Ver estado</button>
+    </div>
+    <div id="resultado-seguimiento"></div>
+  </main>
+
+  <!-- ============ BARRA FLOTANTE DE CARRITO ============ -->
+  <div class="barra-carrito oculto" id="barra-carrito">
+    <span id="texto-barra-carrito">0 productos</span>
+    <span id="texto-barra-total">$0</span>
+  </div>
+
+  <!-- ============ NAV INFERIOR ============ -->
+  <nav class="nav-inferior" aria-label="Navegación principal">
+    <button id="tab-pedir" class="activo" data-vista="pedir">
+      <span class="icono">🍟</span> Pedir
+    </button>
+    <button id="tab-seguimiento" data-vista="seguimiento">
+      <span class="icono">📦</span> Mi pedido
+    </button>
+  </nav>
+
+</div>
+
+<!-- ============ HOJA: CARRITO / DATOS DE ENTREGA ============ -->
+<div class="overlay oculto" id="overlay-carrito">
+  <div class="hoja">
+    <div class="hoja-mango"></div>
+    <h2>Tu pedido</h2>
+
+    <div id="lista-items-carrito"></div>
+
+    <div class="subtotal-fila">
+      <span>Total</span>
+      <span id="total-carrito">$0</span>
+    </div>
+
+    <div id="error-carrito"></div>
+
+    <div class="campo">
+      <label for="campo-nombre">Tu nombre</label>
+      <input type="text" id="campo-nombre" placeholder="¿Cómo te llamas?">
+    </div>
+
+    <div class="campo">
+      <label for="campo-telefono">Teléfono de contacto</label>
+      <input type="tel" id="campo-telefono" placeholder="Para avisarte de tu pedido">
+    </div>
+
+    <div class="campo">
+      <label>¿Cómo lo quieres?</label>
+      <div class="tipo-entrega">
+        <button type="button" id="btn-tipo-local" class="activo" data-tipo="local">🏬 Recoger en el local</button>
+        <button type="button" id="btn-tipo-domicilio" data-tipo="domicilio">🏠 A domicilio</button>
+      </div>
+    </div>
+
+    <div class="campo oculto" id="campo-direccion-wrap">
+      <label for="campo-direccion">Dirección de entrega</label>
+      <input type="text" id="campo-direccion" placeholder="Barrio, calle, número, referencia">
+    </div>
+
+    <div class="campo">
+      <label for="campo-notas">Notas (opcional)</label>
+      <textarea id="campo-notas" placeholder="Sin cebolla, extra salsa, etc."></textarea>
+    </div>
+
+    <button class="btn btn-primario btn-ancho" id="btn-enviar-pedido">Enviar pedido</button>
+    <button class="btn btn-secundario btn-ancho" style="margin-top:8px" id="btn-cerrar-carrito">Seguir viendo el menú</button>
+  </div>
+</div>
+
+<!-- ============ HOJA: CONFIRMACIÓN ============ -->
+<div class="overlay oculto" id="overlay-confirmacion">
+  <div class="hoja">
+    <div class="hoja-mango"></div>
+    <div class="confirmacion">
+      <div class="sello">🔥</div>
+      <h2>¡Pedido enviado!</h2>
+      <p>Tu código de seguimiento es:</p>
+      <div class="id-pedido" id="texto-id-confirmacion">--------</div>
+      <button class="btn btn-primario btn-ancho" id="btn-ver-mi-pedido">Ver estado de mi pedido</button>
+      <button class="btn btn-secundario btn-ancho" style="margin-top:8px" id="btn-seguir-pidiendo">Seguir en el menú</button>
+    </div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="utils.js"></script>
+<script src="cliente.js"></script>
+</body>
+</html>
