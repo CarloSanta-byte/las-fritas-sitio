@@ -30,9 +30,33 @@ function renderCategorias() {
 
   listaCategorias.querySelectorAll(".pill").forEach(function (btn) {
     btn.addEventListener("click", function () {
+      marcarPillActiva(btn.dataset.target);
       document.getElementById(btn.dataset.target).scrollIntoView({ behavior: "smooth", block: "start" });
     });
   });
+}
+
+function marcarPillActiva(targetId) {
+  listaCategorias.querySelectorAll(".pill").forEach(function (p) {
+    p.classList.toggle("activa", p.dataset.target === targetId);
+  });
+  const activa = listaCategorias.querySelector(".pill.activa");
+  if (activa) activa.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+}
+
+// Mientras el cliente hace scroll por el menú, la pastilla de categoría
+// activa se actualiza sola para que siempre sepa dónde está.
+function iniciarScrollSpy() {
+  const secciones = document.querySelectorAll(".seccion-categoria");
+  const observer = new IntersectionObserver(
+    function (entradas) {
+      entradas.forEach(function (entrada) {
+        if (entrada.isIntersecting) marcarPillActiva(entrada.target.id);
+      });
+    },
+    { rootMargin: "-130px 0px -70% 0px", threshold: 0 }
+  );
+  secciones.forEach(function (s) { observer.observe(s); });
 }
 
 function renderMenu() {
@@ -356,6 +380,7 @@ function init() {
   renderCategorias();
   renderMenu();
   actualizarResumenCarrito();
+  iniciarScrollSpy();
 
   // Si llegan con un link tipo index.html?id=abc123, los llevamos directo
   // a ver el estado de ese pedido.
