@@ -11,7 +11,7 @@
  */
 
 const SHEET_NAME = "Pedidos";
-const ESTADOS_VALIDOS = ["Recibido", "Preparando", "Listo para entregar", "En camino"];
+const ESTADOS_VALIDOS = ["Recibido", "Preparando", "Listo para entregar", "En camino", "Entregado"];
 
 function getSheet_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();

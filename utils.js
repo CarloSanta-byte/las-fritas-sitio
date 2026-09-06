@@ -52,3 +52,27 @@ function estadoInfo(clave) {
 function indiceEstado(clave) {
   return ESTADOS.findIndex(function (e) { return e.key === clave; });
 }
+
+// El flujo real de un pedido depende del tipo de entrega: los que se
+// recogen en el local se saltan el paso "En camino".
+function indiceEnFlujo(clave, tipo) {
+  const flujo = flujoParaTipo(tipo);
+  return flujo.indexOf(clave);
+}
+
+function siguienteEstadoEnFlujo(clave, tipo) {
+  const flujo = flujoParaTipo(tipo);
+  const idx = flujo.indexOf(clave);
+  if (idx === -1 || idx === flujo.length - 1) return null;
+  return flujo[idx + 1];
+}
+
+// Quita tildes y pasa a minúsculas, para que buscar "salchipapa" también
+// encuentre "Salchipapa" o "SALCHIPAPA" sin importar acentos.
+function normalizarTexto(texto) {
+  return (texto || "")
+    .toString()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}

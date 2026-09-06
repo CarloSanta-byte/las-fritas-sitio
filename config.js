@@ -5,13 +5,22 @@
 // 2) Ajusta el menú, precios y descripciones a los reales.
 // ============================================================
 
-const API_URL = "PEGA_AQUI_TU_URL_DE_APPS_SCRIPT";
+const API_URL = "https://script.google.com/macros/s/AKfycbxBiCmQFNDrLarXN9tRXI3pZzfDmlsJ8QuGrcE7_KrEF1g9WUi4yCCJkL5xlHXuNhI/exec";
 
 const MARCA = {
   nombre: "Las Fritas",
   eslogan: "Con todo, si no pa' qué.",
   whatsapp: "573232374229",
 };
+
+// Frases cortas para el letrero animado (marquesina) del encabezado.
+const FRASES_MARQUESINA = [
+  "🔥 Con todo, si no pa' qué",
+  "🎉 3 años de aniversario",
+  "🛵 Pide a domicilio o recógelo caliente",
+  "🧀 Nuevo: Show Queso en la Mega Frita",
+  "😋 La dieta queda pa' mañana",
+];
 
 // Cada estado tiene una clave interna (no cambiar), una etiqueta visible,
 // un color y un ícono. El color es información, no decoración: el mismo
@@ -21,14 +30,25 @@ const ESTADOS = [
   { key: "Preparando", label: "Preparando", color: "#FF8A3D", icon: "🔥" },
   { key: "Listo para entregar", label: "Listo para entregar", color: "#3FAE59", icon: "✅" },
   { key: "En camino", label: "En camino", color: "#E6297B", icon: "🛵" },
+  { key: "Entregado", label: "Entregado", color: "#7C8CF8", icon: "🎉" },
 ];
 
-// Estructura de cada producto: id único, categoría, nombre, descripción,
-// precio en pesos colombianos (número entero, sin puntos) y si aplica,
-// una nota corta (ej. "Para compartir").
+// El flujo de estados depende de si el pedido es para recoger en el local
+// (no pasa por "En camino") o a domicilio (sí pasa por todos).
+function flujoParaTipo(tipo) {
+  if (tipo === "domicilio") return ESTADOS.map(function (e) { return e.key; });
+  return ESTADOS.map(function (e) { return e.key; }).filter(function (k) { return k !== "En camino"; });
+}
+
+// Estructura de cada categoría: nombre, ícono (emoji, para no depender de
+// imágenes externas), color de acento, y su lista de productos.
+// Estructura de cada producto: id único, nombre, descripción, precio en
+// pesos colombianos (número entero, sin puntos) y una nota corta opcional.
 const MENU = [
   {
     categoria: "Salchi Papas",
+    icono: "🍟",
+    color: "#F5B921",
     items: [
       { id: "salchi-quesuda", nombre: "Salchi Quesuda", precio: 24000,
         descripcion: "Papa criolla, salchicha americana, salchicha ranchera, queso, ripio, salsa de la casa y salsa bbq." },
@@ -64,6 +84,8 @@ const MENU = [
   },
   {
     categoria: "Burger Fritas",
+    icono: "🍔",
+    color: "#E6297B",
     items: [
       { id: "burger-clasica", nombre: "Burger Clásica", precio: 20000,
         descripcion: "Pan brioche sellado en mantequilla, jugosa carne premium, queso cheddar, salsas de la house y vegetales frescos." },
@@ -85,6 +107,8 @@ const MENU = [
   },
   {
     categoria: "Papas Locas",
+    icono: "🧀",
+    color: "#FF8A3D",
     items: [
       { id: "paparchar", nombre: "Paparchar", precio: 15000, nota: "Nuevo",
         descripcion: "Papitas francesas con queso costeño traído de la costa, el toque dulce de nuestra mermelada de piña y el power de la salsa de la house." },
@@ -96,6 +120,8 @@ const MENU = [
   },
   {
     categoria: "Dog Fritas",
+    icono: "🌭",
+    color: "#3FAE59",
     items: [
       { id: "callejero", nombre: "Callejero", precio: 15000,
         descripcion: "Pan brioche, salchicha americana, cebolla, piña para la niña, papa ripio, queso al gratín y salsas de la casa." },
@@ -109,6 +135,8 @@ const MENU = [
   },
   {
     categoria: "Maduritos",
+    icono: "🍌",
+    color: "#D81E2C",
     items: [
       { id: "madurito-clasico", nombre: "Clásico", precio: 17000, nota: "Nuevo",
         descripcion: "Plátano maduro asado, suero costeño, queso de la casa y trocitos de bocadillo de guayaba." },
@@ -122,6 +150,8 @@ const MENU = [
   },
   {
     categoria: "Desgranadas",
+    icono: "🥣",
+    color: "#F5B921",
     items: [
       { id: "desgranada-criolla", nombre: "Criolla", precio: 24000,
         descripcion: "Carne desmechada, maíz tierno, guacamole, maduro, pico e gallo, ripio, queso fundido y salsas de la casa." },
@@ -137,6 +167,8 @@ const MENU = [
   },
   {
     categoria: "Chicharrón Show",
+    icono: "🥓",
+    color: "#E6297B",
     items: [
       { id: "chicharron-450", nombre: "Chicharrón Show 450 gr", precio: 29000,
         descripcion: "Chicharrón carnudo servido en show, con guacamole." },
@@ -146,6 +178,8 @@ const MENU = [
   },
   {
     categoria: "Bebidas",
+    icono: "🥤",
+    color: "#FF8A3D",
     items: [
       { id: "limonada-natural", nombre: "Limonada Natural", precio: 7000, descripcion: "Limonada clásica, hecha al momento." },
       { id: "limonada-mango-biche", nombre: "Limonada de Mango Biche", precio: 9000, descripcion: "Refrescante y con un toque agridulce." },
@@ -155,6 +189,8 @@ const MENU = [
   },
   {
     categoria: "Granizados y Jugos",
+    icono: "🍹",
+    color: "#3FAE59",
     items: [
       { id: "granizado-mango", nombre: "Mango", precio: 9000, descripcion: "Granizado natural de mango." },
       { id: "granizado-maracuya", nombre: "Maracuyá", precio: 9000, descripcion: "Granizado natural de maracuyá." },
@@ -164,6 +200,8 @@ const MENU = [
   },
   {
     categoria: "Adicionales",
+    icono: "➕",
+    color: "#D81E2C",
     items: [
       { id: "add-carne-desmechada", nombre: "Carne desmechada", precio: 12000, descripcion: "Adicional para tu pedido." },
       { id: "add-pollo-desmechado", nombre: "Pollo desmechado", precio: 12000, descripcion: "Adicional para tu pedido." },

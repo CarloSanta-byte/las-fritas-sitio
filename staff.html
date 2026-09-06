@@ -13,6 +13,20 @@
     <div class="logo-badge" aria-hidden="true"><span>LF</span></div>
     <h1>Panel de pedidos</h1>
     <span class="reloj" id="reloj">--:--</span>
+
+    <div class="staff-buscador">
+      <span class="icono-lupa">🔎</span>
+      <input type="text" id="input-buscar-staff" placeholder="Buscar por nombre, teléfono o código de pedido...">
+      <button class="btn-limpiar-busqueda oculto" id="btn-limpiar-busqueda-staff" aria-label="Limpiar búsqueda">✕</button>
+    </div>
+
+    <div class="staff-filtros-fila">
+      <label class="toggle-entregados">
+        <input type="checkbox" id="chk-mostrar-entregados">
+        Incluir entregados en "Todos"
+      </label>
+      <span class="contador-activos" id="contador-activos">0 pedidos activos</span>
+    </div>
   </header>
 
   <nav class="tabs-estado" id="tabs-estado" aria-label="Filtrar por estado"></nav>
