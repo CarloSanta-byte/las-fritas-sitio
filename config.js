@@ -5,7 +5,7 @@
 // 2) Ajusta el menú, precios y descripciones a los reales.
 // ============================================================
 
-const API_URL = "PEGA_AQUI_TU_URL_DE_APPS_SCRIPT";
+const API_URL = "https://script.google.com/macros/s/AKfycbxBiCmQFNDrLarXN9tRXI3pZzfDmlsJ8QuGrcE7_KrEF1g9WUi4yCCJkL5xlHXuNhI/exec";
 
 const MARCA = {
   nombre: "Las Fritas",
