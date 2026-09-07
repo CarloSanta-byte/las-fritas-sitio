@@ -1,0 +1,17 @@
+{
+  "id": "./",
+  "name": "Las Fritas Salchipapería",
+  "short_name": "Las Fritas",
+  "description": "Arma tu antojo y sigue tu pedido en Villavicencio.",
+  "lang": "es-CO",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b0a0c",
+  "theme_color": "#0b0a0c",
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [{ "name": "Ver el menú", "url": "./index.html", "description": "Pide tu próximo antojo" }]
+}

@@ -5,34 +5,48 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Las Fritas — Panel de cocina y recepción</title>
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="mejoras.css">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#0b0a0c">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
 </head>
 <body>
 
+<div id="toast" class="toast oculto" role="status"></div>
 <div class="staff-shell">
   <header class="staff-topbar">
     <div class="logo-badge" aria-hidden="true"><span>LF</span></div>
-    <h1>Panel de pedidos</h1>
+    <h1><small>LAS FRITAS · COCINA Y RECEPCIÓN</small>Que no se enfríe el antojo.</h1>
     <span class="reloj" id="reloj">--:--</span>
 
-    <div class="staff-buscador">
+    <div class="staff-herramientas oculto" id="staff-herramientas"><span class="estado-conexion" id="estado-conexion" role="status">Conectando…</span><button class="btn btn-secundario" id="btn-sonido" aria-pressed="false">Activar sonido</button><button class="btn btn-secundario" id="btn-actualizar">Actualizar</button><button class="btn btn-secundario" id="btn-salir">Cerrar sesión</button></div>
+    <div class="staff-buscador oculto" id="staff-buscador">
       <span class="icono-lupa">🔎</span>
-      <input type="text" id="input-buscar-staff" placeholder="Buscar por nombre, teléfono o código de pedido...">
+      <input type="search" id="input-buscar-staff" aria-label="Buscar pedidos por nombre, teléfono o código" placeholder="Nombre, teléfono o código de pedido…">
       <button class="btn-limpiar-busqueda oculto" id="btn-limpiar-busqueda-staff" aria-label="Limpiar búsqueda">✕</button>
     </div>
 
-    <div class="staff-filtros-fila">
+    <div class="staff-filtros-fila oculto" id="staff-filtros">
       <label class="toggle-entregados">
         <input type="checkbox" id="chk-mostrar-entregados">
-        Incluir entregados en "Todos"
+        Incluir entregados de hoy en "Todos"
       </label>
       <span class="contador-activos" id="contador-activos">0 pedidos activos</span>
     </div>
   </header>
 
+  <form class="staff-login" id="staff-login"><span class="eyebrow">SOLO PARA EL EQUIPO</span><h2>Todo listo para el servicio.</h2><p class="texto-ayuda">Entra con la clave del local para ver y gestionar los pedidos.</p><div class="campo"><label for="clave-staff">Clave de cocina</label><input id="clave-staff" type="password" autocomplete="current-password" required maxlength="200"></div><p id="error-login" class="texto-ayuda" role="alert"></p><button class="btn btn-primario btn-ancho" id="btn-entrar">Entrar a cocina ↗</button></form>
+  <div class="oculto" id="staff-panel">
+  <section class="resumen-dia" aria-label="Resumen de pedidos de hoy en Colombia"><div class="metrica"><span>Pedidos de hoy</span><strong id="metrica-pedidos">—</strong><small id="fecha-resumen">Hora de Colombia</small></div><div class="metrica"><span>Valor de pedidos de hoy</span><strong id="metrica-valor">—</strong><small>Solo productos</small></div><div class="metrica"><span>Entregados de hoy</span><strong id="metrica-entregados">—</strong><small>Pedidos creados hoy</small></div><div class="metrica"><span>Valor entregado de hoy</span><strong id="metrica-entregado-valor">—</strong><small>No confirma pagos</small></div></section>
+  <p class="nota-resumen">Resumen por fecha de creación, de 00:00 a 23:59 en Colombia. Los pedidos activos de días anteriores también siguen visibles. No incluye cobros de domicilio.</p>
+  <div class="alerta-pedidos oculto" id="alerta-pedidos" role="alert"><strong id="texto-alerta">Hay nuevos pedidos</strong><button class="btn" id="btn-revisar-nuevos">Ver recibidos</button></div>
   <nav class="tabs-estado" id="tabs-estado" aria-label="Filtrar por estado"></nav>
 
   <main class="columna-pedidos" id="columna-pedidos"></main>
+  </div>
 </div>
+<section id="ticket-impresion" class="oculto" aria-label="Ticket de cocina"></section>
 
 <script src="config.js"></script>
 <script src="utils.js"></script>

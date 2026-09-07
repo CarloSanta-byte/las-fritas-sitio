@@ -6,8 +6,18 @@
 <title>Las Fritas — Pide tu antojo</title>
 <meta name="description" content="Pide en línea en Las Fritas Salchipapería. Para recoger en el local o a domicilio.">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="mejoras.css">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<meta name="theme-color" content="#0b0a0c">
+<meta name="referrer" content="no-referrer">
 </head>
 <body>
+<a class="saltar" href="#contenedor-menu">Saltar al menú</a>
+<div class="aviso-conexion oculto" id="aviso-conexion" role="status"></div>
+<div class="toast oculto" id="toast" role="status" aria-live="polite"></div>
+<div class="sr-only" id="anuncio-carrito" aria-live="polite" aria-atomic="true"></div>
 
 <div class="marquesina" aria-hidden="true">
   <div class="marquesina-track" id="marquesina-track"></div>
@@ -42,33 +52,40 @@
     <main id="vista-pedir">
       <section class="hero">
         <div class="hero-contenido">
-          <h1 class="brillo-neon">Con hambre no<br>se piensa, se pide.</h1>
+          <span class="eyebrow">HECHO PARA TU ANTOJO · VILLAVICENCIO</span>
+          <h1>Con hambre<br>no se piensa.<br><em>Se pide.</em></h1>
           <p>Arma tu antojo y elige si lo recoges en el local o te lo llevamos a la puerta.</p>
+          <div class="hero-acciones"><a class="btn btn-primario" href="#lista-categorias">Explorar el menú <span aria-hidden="true">↗</span></a><button class="btn btn-secundario" id="btn-sorprendeme">Sorpréndeme ✨</button></div>
+          <div class="hero-datos"><span>01 Elige</span><span>02 Personaliza</span><span>03 Disfruta</span></div>
         </div>
+        <div class="hero-arte" aria-hidden="true"><div class="orbita"></div><div class="papas-arte"><i></i><i></i><i></i><i></i><i></i><i></i><div class="caja-papas"><b>LAS<br>FRITAS</b><small>CON TODO.</small></div></div><span class="sticker sticker-queso">Extra antojo.<br>Cero vueltas.</span><span class="estrella e1">✳</span><span class="estrella e2">✳</span><span class="sticker sticker-local">SABOR<br>LLANERO ↗</span></div>
       </section>
+      <div class="experiencia-bar"><span>Tu próximo antojo está aquí ↓</span><button id="btn-movimiento" aria-pressed="false">Pausar animaciones</button><button id="btn-instalar" class="oculto">Instalar app ↗</button></div>
 
       <div class="buscador-wrap oculto" id="buscador-wrap">
         <div class="buscador-caja">
           <span class="icono-lupa">🔎</span>
-          <input type="text" id="input-buscar-menu" placeholder="Busca por nombre, ej: burger, mango, chicharrón...">
+          <input type="search" id="input-buscar-menu" aria-label="Buscar productos" placeholder="Busca por nombre, ej: burger, mango, chicharrón...">
           <button class="btn-limpiar-busqueda oculto" id="btn-limpiar-busqueda" aria-label="Limpiar búsqueda">✕</button>
         </div>
       </div>
 
       <nav class="categorias" id="lista-categorias" aria-label="Categorías del menú"></nav>
 
-      <div id="contenedor-menu"></div>
+      <div id="contenedor-menu" tabindex="-1"></div>
 
       <div id="contenedor-resultados" class="oculto"></div>
     </main>
 
     <!-- ============ VISTA: MI PEDIDO ============ -->
     <main id="vista-seguimiento" class="vista-seguimiento oculto">
+      <span class="eyebrow">DEL ANTOJO A TU MESA</span><h1>Así va tu pedido</h1><p class="texto-ayuda">Ingresa tu código para ver los cambios de cocina.</p>
       <div class="buscador-pedido">
-        <input type="text" id="input-id-pedido" placeholder="Código de tu pedido, ej: a1b2c3d4" autocomplete="off">
+        <input type="text" id="input-id-pedido" aria-label="Código de seguimiento" placeholder="Código del pedido" autocomplete="off" maxlength="32" autocapitalize="none" spellcheck="false">
         <button class="btn btn-primario" id="btn-buscar-pedido">Ver estado</button>
       </div>
-      <div id="resultado-seguimiento"></div>
+      <p id="estado-conexion-seguimiento" role="status" class="texto-ayuda"></p>
+      <div id="resultado-seguimiento" aria-live="polite"></div>
     </main>
 
     <!-- ============ NAV INFERIOR (mobile) ============ -->
@@ -82,10 +99,10 @@
     </nav>
 
     <!-- ============ BARRA FLOTANTE DE CARRITO (mobile) ============ -->
-    <div class="barra-carrito oculto" id="barra-carrito">
+    <button type="button" class="barra-carrito oculto" id="barra-carrito" aria-label="Abrir carrito">
       <span id="texto-barra-carrito">0 productos</span>
       <span id="texto-barra-total">$0</span>
-    </div>
+    </button>
 
     <button class="btn-arriba" id="btn-arriba" aria-label="Volver arriba">↑</button>
 
@@ -95,30 +112,32 @@
   <div class="overlay oculto" id="overlay-carrito">
     <div class="hoja">
       <div class="hoja-mango"></div>
-      <h2>🛒 Tu pedido</h2>
+      <h2 id="titulo-carrito">Tu antojo <span aria-hidden="true">↗</span></h2><p class="texto-ayuda">A tu gusto, hasta el último detalle.</p>
 
       <div id="lista-items-carrito"></div>
 
       <div class="subtotal-fila">
-        <span>Total</span>
+        <span>Total productos</span>
         <span id="total-carrito">$0</span>
       </div>
 
-      <div id="error-carrito"></div>
+      <p class="texto-ayuda oculto" id="aviso-domicilio">El costo y la cobertura del domicilio se confirman con el local. Este total incluye solo productos.</p>
+      <div id="error-carrito" role="alert" tabindex="-1"></div>
+      <p id="envio-pendiente" class="mensaje-error oculto">Estamos confirmando el envío anterior. Reintenta para recuperar su código sin duplicarlo. Conservamos los datos originales.</p>
 
       <div class="campo">
         <label for="campo-nombre">Tu nombre</label>
-        <input type="text" id="campo-nombre" placeholder="¿Cómo te llamas?">
+        <input type="text" id="campo-nombre" placeholder="¿Cómo te llamas?" autocomplete="name" maxlength="80">
       </div>
 
       <div class="campo">
         <label for="campo-telefono">Teléfono de contacto</label>
-        <input type="tel" id="campo-telefono" placeholder="Para avisarte de tu pedido">
+        <input type="tel" id="campo-telefono" placeholder="Para avisarte de tu pedido" autocomplete="tel" maxlength="24">
       </div>
 
       <div class="campo">
-        <label>¿Cómo lo quieres?</label>
-        <div class="tipo-entrega">
+        <label id="label-tipo-entrega">¿Cómo lo quieres?</label>
+        <div class="tipo-entrega" role="group" aria-labelledby="label-tipo-entrega">
           <button type="button" id="btn-tipo-local" class="activo" data-tipo="local">🏬 Recoger en el local</button>
           <button type="button" id="btn-tipo-domicilio" data-tipo="domicilio">🏠 A domicilio</button>
         </div>
@@ -126,15 +145,16 @@
 
       <div class="campo oculto" id="campo-direccion-wrap">
         <label for="campo-direccion">Dirección de entrega</label>
-        <input type="text" id="campo-direccion" placeholder="Barrio, calle, número, referencia">
+        <input type="text" id="campo-direccion" placeholder="Barrio, calle, número, referencia" autocomplete="street-address" maxlength="250">
       </div>
 
       <div class="campo">
         <label for="campo-notas">Notas generales del pedido (opcional)</label>
-        <textarea id="campo-notas" placeholder="Ej: tocar el timbre, traer cubiertos, etc."></textarea>
+        <textarea id="campo-notas" placeholder="Ej: tocar el timbre, traer cubiertos, etc." maxlength="500"></textarea>
       </div>
 
       <button class="btn btn-primario btn-ancho" id="btn-enviar-pedido">Enviar pedido</button>
+      <p class="texto-ayuda privacidad">Usamos tus datos para gestionar este pedido. El carrito se guarda durante 24 horas en este dispositivo; un envío sin confirmar conserva sus datos hasta recuperar la respuesta.</p>
       <button class="btn btn-secundario btn-ancho" style="margin-top:8px" id="btn-cerrar-carrito">Seguir viendo el menú</button>
     </div>
   </div>
@@ -145,6 +165,7 @@
 <div class="overlay oculto" id="overlay-detalle-producto">
   <div class="hoja">
     <div class="hoja-mango"></div>
+    <button class="cerrar-hoja" id="btn-cerrar-detalle" aria-label="Cerrar detalle">✕</button>
     <div class="detalle-producto-cabecera">
       <div class="detalle-icono" id="detalle-icono"></div>
       <div>
@@ -156,7 +177,7 @@
 
     <div class="campo">
       <label for="detalle-nota">¿Alguna personalización? (opcional)</label>
-      <input type="text" id="detalle-nota" placeholder="Ej: sin cebolla, extra salsa...">
+      <input type="text" id="detalle-nota" placeholder="Ej: sin cebolla, extra salsa..." maxlength="200">
     </div>
 
     <div class="detalle-stepper-fila">
@@ -181,6 +202,8 @@
       <h2>¡Pedido enviado!</h2>
       <p>Tu código de seguimiento es:</p>
       <div class="id-pedido" id="texto-id-confirmacion">--------</div>
+      <button class="btn btn-secundario btn-ancho" id="btn-copiar-seguimiento">Copiar enlace de seguimiento</button>
+      <a class="btn btn-secundario btn-ancho enlace-whatsapp" id="btn-whatsapp-confirmacion" target="_blank" rel="noopener noreferrer">Compartir pedido por WhatsApp ↗</a>
       <button class="btn btn-primario btn-ancho" id="btn-ver-mi-pedido">Ver estado de mi pedido</button>
       <button class="btn btn-secundario btn-ancho" style="margin-top:8px" id="btn-seguir-pidiendo">Seguir en el menú</button>
     </div>
@@ -190,5 +213,6 @@
 <script src="config.js"></script>
 <script src="utils.js"></script>
 <script src="cliente.js"></script>
+<script src="experiencia.js"></script>
 </body>
 </html>

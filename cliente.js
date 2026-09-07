@@ -14,6 +14,13 @@ let intervaloSeguimiento = null;
 let productoEnDetalle = null;
 let cantidadDetalle = 1;
 let terminoBusqueda = "";
+let pedidoPendiente = leerGuardado("lasfritas_envio_pendiente");
+let envioEnCurso = false;
+let seguimientoVersion = 0;
+let seguimientoId = null;
+let ultimoSeguimiento = "";
+let observadorTarjetas;
+let cantidadAnunciada = 0;
 
 const badgeCarrito = $("#badge-carrito");
 const iconoCarrito = $("#btn-abrir-carrito");
@@ -67,12 +74,14 @@ function marcarPillActiva(targetId) {
   const lista = $("#lista-categorias");
   lista.querySelectorAll(".pill").forEach(function (p) {
     p.classList.toggle("activa", p.dataset.target === targetId);
+    p.setAttribute("aria-pressed", String(p.dataset.target === targetId));
   });
   const activa = lista.querySelector(".pill.activa");
-  if (activa) activa.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+  if (activa) lista.scrollTo({ left: activa.offsetLeft - lista.offsetLeft - lista.clientWidth / 2 + activa.clientWidth / 2, behavior: "auto" });
 }
 
 function iniciarScrollSpy() {
+  if (!("IntersectionObserver" in window)) return;
   const secciones = document.querySelectorAll(".seccion-categoria");
   const observer = new IntersectionObserver(
     function (entradas) {
@@ -111,12 +120,12 @@ function renderTarjetaProducto(p, grupo, esResultado) {
   const chipNuevo = p.nota === "Nuevo" ? '<span class="chip-nuevo">Nuevo</span>' : "";
 
   return (
-    '<article class="tarjeta-producto' + (esResultado ? " tarjeta-resultado" : "") + '" style="--color-cat:' + grupo.color + '" data-id="' + p.id + '" tabindex="0" role="button" aria-label="Ver detalle de ' + p.nombre + '">' +
+    '<article class="tarjeta-producto' + (esResultado ? " tarjeta-resultado" : "") + '" style="--color-cat:' + grupo.color + '" data-id="' + p.id + '">' +
       '<div class="icono-mini">' + grupo.icono + "</div>" +
       chipNuevo +
       (esResultado ? '<div class="info-resultado">' : "") +
       (esResultado ? '<span class="categoria-resultado">' + grupo.categoria + "</span>" : "") +
-      "<h3>" + p.nombre + "</h3>" +
+      '<h3><button class="detalle-abrir" aria-label="Ver detalle de ' + htmlSeguro(p.nombre) + '">' + htmlSeguro(p.nombre) + "</button></h3>" +
       '<p class="descripcion-corta">' + p.descripcion + "</p>" +
       (esResultado ? "</div>" : "") +
       '<div class="pie-tarjeta">' +
@@ -129,13 +138,13 @@ function renderTarjetaProducto(p, grupo, esResultado) {
 
 function renderControlCantidad(productoId, cantidad) {
   if (cantidad === 0) {
-    return '<button class="btn-add-rapido" data-accion="add-rapido" data-id="' + productoId + '" aria-label="Agregar">+</button>';
+    return '<button class="btn-add-rapido" data-accion="add-rapido" data-id="' + productoId + '" aria-label="Agregar ' + htmlSeguro(indiceProductos[productoId].producto.nombre) + '">+</button>';
   }
   return (
     '<div class="stepper-mini" data-accion="stepper-rapido" data-id="' + productoId + '">' +
-      '<button data-op="restar">−</button>' +
+      '<button data-op="restar" aria-label="Quitar uno">−</button>' +
       '<span class="cant">' + cantidad + "</span>" +
-      '<button data-op="sumar">+</button>' +
+      '<button data-op="sumar" aria-label="Agregar uno">+</button>' +
     "</div>"
   );
 }
@@ -149,9 +158,6 @@ function cablearTarjetas(contenedor) {
     tarjeta.addEventListener("click", function (e) {
       if (e.target.closest("[data-accion]")) return; // el stepper maneja su propio click
       abrirDetalleProducto(id);
-    });
-    tarjeta.addEventListener("keydown", function (e) {
-      if (e.key === "Enter") abrirDetalleProducto(id);
     });
   });
 
@@ -183,10 +189,13 @@ function actualizarTarjetaProducto(productoId) {
     const linea = carritoLineas[lineId(productoId, "")];
     const cantidad = linea ? linea.cantidad : 0;
     const controlViejo = pie.querySelector('[data-accion]');
+    const focoEnControl = controlViejo.contains(document.activeElement);
+    const operacionFoco = document.activeElement.dataset.op;
     const controlNuevo = document.createElement("div");
     controlNuevo.innerHTML = renderControlCantidad(productoId, cantidad);
     const nuevoEl = controlNuevo.firstElementChild;
     pie.replaceChild(nuevoEl, controlViejo);
+    if (focoEnControl) (nuevoEl.matches("button") ? nuevoEl : nuevoEl.querySelector('[data-op="' + (operacionFoco || "sumar") + '"]')).focus({ preventScroll: true });
 
     if (nuevoEl.dataset.accion === "add-rapido") {
       nuevoEl.addEventListener("click", function (e) {
@@ -212,7 +221,9 @@ function actualizarTarjetaProducto(productoId) {
 // Revela las tarjetas con una pequeña animación a medida que aparecen
 // en pantalla (rieles horizontales incluidos).
 function revelarTarjetasVisibles() {
-  const observer = new IntersectionObserver(function (entradas, obs) {
+  if (!("IntersectionObserver" in window)) { document.querySelectorAll(".tarjeta-producto").forEach(t => t.classList.add("visible")); return; }
+  if (observadorTarjetas) observadorTarjetas.disconnect();
+  observadorTarjetas = new IntersectionObserver(function (entradas, obs) {
     entradas.forEach(function (entrada) {
       if (entrada.isIntersecting) {
         entrada.target.classList.add("visible");
@@ -220,18 +231,21 @@ function revelarTarjetasVisibles() {
       }
     });
   }, { threshold: 0.1 });
-  document.querySelectorAll(".tarjeta-producto:not(.visible)").forEach(function (t) { observer.observe(t); });
+  document.querySelectorAll(".tarjeta-producto:not(.visible)").forEach(function (t) { observadorTarjetas.observe(t); });
 }
 
 // ============================================================
 // CARRITO (líneas)
 // ============================================================
 function cambiarCantidadLinea(id, productoId, nota, delta) {
+  if (pedidoPendiente || envioEnCurso) { avisar("Confirma primero el envío pendiente desde tu carrito."); return; }
   const info = indiceProductos[productoId];
   if (!info) return;
 
   const actual = carritoLineas[id] ? carritoLineas[id].cantidad : 0;
-  const nueva = Math.max(0, actual + delta);
+  const nueva = Math.min(50, Math.max(0, actual + delta));
+  if (actual + delta > 50) avisar("Máximo 50 unidades por línea. Para pedidos grandes, contacta al local.");
+  if (!actual && nueva > 0 && Object.keys(carritoLineas).length >= 60) { avisar("Máximo 60 líneas por pedido."); return; }
 
   if (nueva === 0) {
     delete carritoLineas[id];
@@ -239,6 +253,7 @@ function cambiarCantidadLinea(id, productoId, nota, delta) {
     carritoLineas[id] = { producto: info.producto, categoria: info.categoria, cantidad: nueva, nota: nota || "" };
   }
   actualizarResumenCarrito();
+  guardarCarrito();
 }
 
 function animarIconoCarrito() {
@@ -257,6 +272,7 @@ function cantidadTotalCarrito() {
 function actualizarResumenCarrito() {
   const cantidad = cantidadTotalCarrito();
   const total = totalCarrito();
+  if (cantidad !== cantidadAnunciada) { $("#anuncio-carrito").textContent = cantidad + " productos en el carrito. Total " + formatoPesos(total); cantidadAnunciada = cantidad; }
 
   if (cantidad > 0) {
     badgeCarrito.textContent = cantidad;
@@ -273,6 +289,8 @@ function actualizarResumenCarrito() {
 
 function renderListaCarritoEnHoja() {
   const contenedor = $("#lista-items-carrito");
+  const lineaFoco = document.activeElement.closest("[data-lineid]")?.dataset.lineid;
+  const operacionFoco = document.activeElement.dataset.op;
   const lineas = Object.entries(carritoLineas);
 
   if (lineas.length === 0) {
@@ -286,10 +304,10 @@ function renderListaCarritoEnHoja() {
           '<span>' + l.cantidad + " × " + formatoPesos(l.producto.precio) + "</span>" +
           (l.nota ? '<span class="nota-linea">📝 ' + escaparHtmlCliente(l.nota) + "</span>" : "") +
           "</div>" +
-          '<div class="stepper-mini" data-lineid="' + id + '">' +
-            '<button data-op="restar">−</button>' +
+          '<div class="stepper-mini" data-lineid="' + htmlSeguro(id) + '">' +
+            '<button data-op="restar" aria-label="Quitar uno">−</button>' +
             '<span class="cant">' + l.cantidad + "</span>" +
-            '<button data-op="sumar">+</button>' +
+            '<button data-op="sumar" aria-label="Agregar uno">+</button>' +
           "</div>" +
         "</div>"
       );
@@ -310,12 +328,15 @@ function renderListaCarritoEnHoja() {
   }
 
   $("#total-carrito").textContent = formatoPesos(totalCarrito());
+  if (lineaFoco) {
+    const linea = [...contenedor.querySelectorAll("[data-lineid]")].find(el => el.dataset.lineid === lineaFoco);
+    const foco = linea?.querySelector('[data-op="' + (operacionFoco || "sumar") + '"]') || contenedor.querySelector("button") || $("#campo-nombre");
+    foco.focus({ preventScroll: true });
+  }
 }
 
 function escaparHtmlCliente(texto) {
-  const div = document.createElement("div");
-  div.textContent = texto || "";
-  return div.innerHTML;
+  return htmlSeguro(texto);
 }
 
 // ============================================================
@@ -342,7 +363,7 @@ function cerrarDetalleProducto() {
   productoEnDetalle = null;
 }
 $("#detalle-sumar").addEventListener("click", function () {
-  cantidadDetalle++;
+  cantidadDetalle = Math.min(50, cantidadDetalle + 1);
   $("#detalle-cantidad").textContent = cantidadDetalle;
 });
 $("#detalle-restar").addEventListener("click", function () {
@@ -454,16 +475,23 @@ $("#overlay-carrito").addEventListener("click", function (e) {
 $("#btn-tipo-local").addEventListener("click", function () { seleccionarTipoEntrega("local"); });
 $("#btn-tipo-domicilio").addEventListener("click", function () { seleccionarTipoEntrega("domicilio"); });
 function seleccionarTipoEntrega(tipo) {
+  if (pedidoPendiente || envioEnCurso) return;
   tipoEntrega = tipo;
   $("#btn-tipo-local").classList.toggle("activo", tipo === "local");
   $("#btn-tipo-domicilio").classList.toggle("activo", tipo === "domicilio");
   $("#campo-direccion-wrap").classList.toggle("oculto", tipo !== "domicilio");
+  $("#aviso-domicilio").classList.toggle("oculto", tipo !== "domicilio");
+  $("#btn-tipo-local").setAttribute("aria-pressed", String(tipo === "local"));
+  $("#btn-tipo-domicilio").setAttribute("aria-pressed", String(tipo === "domicilio"));
+  guardarCarrito();
 }
 
 // ============================================================
 // ENVIAR PEDIDO
 // ============================================================
 $("#btn-enviar-pedido").addEventListener("click", async function () {
+  if (envioEnCurso) return;
+  if (!navigator.onLine) { avisar("Necesitas conexión para enviar. Tu carrito está guardado."); return; }
   const errores = [];
   const nombre = $("#campo-nombre").value.trim();
   const telefono = $("#campo-telefono").value.trim();
@@ -472,12 +500,13 @@ $("#btn-enviar-pedido").addEventListener("click", async function () {
 
   if (cantidadTotalCarrito() === 0) errores.push("Agrega al menos un producto.");
   if (!nombre) errores.push("Escribe tu nombre.");
-  if (!telefono) errores.push("Escribe un teléfono de contacto.");
+  if (!/^[+\d\s()-]+$/.test(telefono) || !/^\d{7,15}$/.test(telefono.replace(/\D/g, ""))) errores.push("Escribe un teléfono válido, de 7 a 15 dígitos.");
   if (tipoEntrega === "domicilio" && !direccion) errores.push("Escribe la dirección de entrega.");
 
   const cajaError = $("#error-carrito");
-  if (errores.length > 0) {
+  if (errores.length > 0 && !pedidoPendiente) {
     cajaError.innerHTML = '<div class="mensaje-error">' + errores.join("<br>") + "</div>";
+    cajaError.focus();
     return;
   }
   cajaError.innerHTML = "";
@@ -485,37 +514,54 @@ $("#btn-enviar-pedido").addEventListener("click", async function () {
   const btn = $("#btn-enviar-pedido");
   btn.disabled = true;
   btn.textContent = "Enviando...";
+  envioEnCurso = true;
 
   const items = Object.values(carritoLineas).map(function (l) {
     return { id: l.producto.id, nombre: l.producto.nombre, precio: l.producto.precio, cantidad: l.cantidad, nota: l.nota || "" };
   });
 
   try {
-    const data = await apiPost({
+    const payload = pedidoPendiente || {
       accion: "crear", cliente: nombre, telefono: telefono, tipo: tipoEntrega,
       direccion: direccion, items: items, notas: notas, total: totalCarrito(),
-    });
+      requestId: crypto.randomUUID ? crypto.randomUUID() : Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, "0")).join(""),
+    };
+    pedidoPendiente = payload;
+    guardar("lasfritas_envio_pendiente", payload);
+    bloquearEnvioPendiente();
+    const data = await apiPost(payload);
+    pedidoPendiente = null;
+    guardar("lasfritas_envio_pendiente", null);
 
     ultimoIdEnviado = data.id;
     try { localStorage.setItem("lasfritas_ultimo_pedido", data.id); } catch (e) {}
 
     Object.keys(carritoLineas).forEach(function (id) { delete carritoLineas[id]; });
-    document.querySelectorAll(".tarjeta-producto").forEach(function (t) { actualizarTarjetaProducto(t.dataset.id); });
+    Object.keys(indiceProductos).forEach(actualizarTarjetaProducto);
     actualizarResumenCarrito();
+    guardarCarrito();
 
     if (window.innerWidth < 1000) $("#overlay-carrito").classList.add("oculto");
     $("#texto-id-confirmacion").textContent = data.id;
+    const enlace = enlaceSeguimiento(data.id);
+    const mensaje = "Mi pedido en Las Fritas #" + data.id + "\n" + payload.items.map(it => it.cantidad + " × " + it.nombre + (it.nota ? " (" + it.nota + ")" : "")).join("\n") + "\nTotal productos: " + formatoPesos(data.total ?? payload.total) + "\n" + (payload.tipo === "domicilio" ? "A domicilio (valor por confirmar)" : "Para recoger") + "\nSeguimiento: " + enlace;
+    $("#btn-whatsapp-confirmacion").href = "https://wa.me/" + MARCA.whatsapp.replace(/\D/g, "") + "?text=" + encodeURIComponent(mensaje);
     $("#overlay-confirmacion").classList.remove("oculto");
     lanzarConfeti();
   } catch (err) {
-    cajaError.innerHTML = '<div class="mensaje-error">No pudimos enviar tu pedido. ' + err.message + "</div>";
+    if (err.confirmado && !["SERVIDOR", "CONFLICTO"].includes(err.code)) { pedidoPendiente = null; guardar("lasfritas_envio_pendiente", null); }
+    cajaError.innerHTML = '<div class="mensaje-error">No pudimos confirmar tu pedido. ' + htmlSeguro(err.message) + "</div>";
+    cajaError.focus();
   } finally {
+    envioEnCurso = false;
+    bloquearEnvioPendiente();
     btn.disabled = false;
-    btn.textContent = "Enviar pedido";
+    btn.textContent = pedidoPendiente ? "Reintentar el mismo pedido" : "Enviar pedido";
   }
 });
 
 function lanzarConfeti() {
+  if (!movimientoPermitido()) return;
   const contenedor = $("#contenedor-confeti");
   const emojis = ["🎉", "🔥", "🍟", "🍔", "✨"];
   for (let i = 0; i < 14; i++) {
@@ -534,9 +580,8 @@ $("#btn-seguir-pidiendo").addEventListener("click", function () {
 });
 $("#btn-ver-mi-pedido").addEventListener("click", function () {
   $("#overlay-confirmacion").classList.add("oculto");
-  cambiarVista("seguimiento");
   $("#input-id-pedido").value = ultimoIdEnviado || "";
-  buscarPedido(ultimoIdEnviado);
+  cambiarVista("seguimiento");
 });
 
 // ============================================================
@@ -547,6 +592,7 @@ function cambiarVista(vista) {
   $("#vista-seguimiento").classList.toggle("oculto", vista !== "seguimiento");
   document.querySelectorAll('[data-vista="pedir"]').forEach(function (b) { b.classList.toggle("activo", vista === "pedir"); });
   document.querySelectorAll('[data-vista="seguimiento"]').forEach(function (b) { b.classList.toggle("activo", vista === "seguimiento"); });
+  document.querySelectorAll('[data-vista]').forEach(b => { if (b.dataset.vista === vista) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   if (window.innerWidth < 1000) {
     barraCarrito.classList.toggle("oculto", vista !== "pedir" || cantidadTotalCarrito() === 0);
   }
@@ -555,6 +601,8 @@ function cambiarVista(vista) {
     clearInterval(intervaloSeguimiento);
     intervaloSeguimiento = null;
   }
+  if (vista !== "seguimiento") { seguimientoVersion++; seguimientoId = null; }
+  else if ($("#input-id-pedido").value.trim()) buscarPedido($("#input-id-pedido").value.trim());
 }
 document.querySelectorAll('[data-vista]').forEach(function (btn) {
   btn.addEventListener("click", function () { cambiarVista(btn.dataset.vista); });
@@ -571,28 +619,44 @@ function renderEstadoVacio(mensaje, emoji) {
 }
 
 async function buscarPedido(id) {
-  if (intervaloSeguimiento) { clearInterval(intervaloSeguimiento); intervaloSeguimiento = null; }
+  $("#estado-conexion-seguimiento").textContent = "";
+  if (intervaloSeguimiento) { clearTimeout(intervaloSeguimiento); intervaloSeguimiento = null; }
+  const version = ++seguimientoVersion;
+  seguimientoId = id = String(id || "").trim().toLowerCase();
+  ultimoSeguimiento = "";
   if (!id) { renderEstadoVacio("Escribe el código que te dimos al hacer el pedido."); return; }
-  await consultarYRenderizar(id);
-  intervaloSeguimiento = setInterval(function () { consultarYRenderizar(id); }, 5000);
+  if (!/^[a-f0-9]{8,32}$/.test(id)) { renderEstadoVacio("Revisa tu código: debe contener entre 8 y 32 letras de la a a la f y números."); return; }
+  renderEstadoVacio("Consultando tu pedido…", "⏳");
+  consultarYRenderizar(id, version);
 }
 
-async function consultarYRenderizar(id) {
+async function consultarYRenderizar(id, version) {
+  if (version !== seguimientoVersion) return;
+  if (document.hidden) { intervaloSeguimiento = setTimeout(() => consultarYRenderizar(id, version), 15000); return; }
+  let continuar = true;
   try {
     const data = await apiGet({ id: id });
+    if (version !== seguimientoVersion) return;
     if (!data.pedidos || data.pedidos.length === 0) {
       renderEstadoVacio("No encontramos un pedido con ese código. Revisa que esté bien escrito.", "🤔");
+      continuar = false;
       return;
     }
-    renderSeguimiento(data.pedidos[0]);
+    const pedido = data.pedidos[0];
+    const firma = JSON.stringify(pedido);
+    if (firma !== ultimoSeguimiento) { renderSeguimiento(pedido); ultimoSeguimiento = firma; }
+    continuar = pedido.estado !== "Entregado";
+    $("#estado-conexion-seguimiento").textContent = continuar ? "Actualizado · volveremos a consultar automáticamente." : "¡Entregado! Gracias por pedir en Las Fritas.";
   } catch (err) {
-    renderEstadoVacio("No pudimos consultar tu pedido ahora mismo. Intenta de nuevo en un momento.", "⚠️");
+    if (version !== seguimientoVersion) return;
+    $("#estado-conexion-seguimiento").textContent = "Sin actualización. Conservamos el último estado y reintentaremos al recuperar la conexión.";
+  } finally {
+    if (continuar && version === seguimientoVersion) intervaloSeguimiento = setTimeout(() => consultarYRenderizar(id, version), 10000);
   }
 }
 
 function renderSeguimiento(pedido) {
-  let items = [];
-  try { items = JSON.parse(pedido.items); } catch (e) {}
+  const items = leerItems(pedido);
 
   const flujo = flujoParaTipo(pedido.tipo);
   const idxActual = flujo.indexOf(pedido.estado);
@@ -614,15 +678,15 @@ function renderSeguimiento(pedido) {
   }).join("");
 
   const listaItems = items.map(function (it) {
-    return '<div class="fila">' + it.cantidad + "× " + it.nombre + (it.nota ? " (" + it.nota + ")" : "") + '<strong>' + formatoPesos(it.precio * it.cantidad) + "</strong></div>";
+    return '<div class="fila"><span>' + htmlSeguro(it.cantidad) + "× " + htmlSeguro(it.nombre) + (it.nota ? " (" + htmlSeguro(it.nota) + ")" : "") + '</span><strong>' + formatoPesos(it.precio * it.cantidad) + "</strong></div>";
   }).join("");
 
   $("#resultado-seguimiento").innerHTML =
     '<div class="tarjeta-resumen-pedido">' +
-      '<div class="fila"><span>Código</span><strong>' + pedido.id + "</strong></div>" +
+      '<div class="fila"><span>Código</span><strong>' + htmlSeguro(pedido.id) + "</strong></div>" +
       '<div class="fila"><span>Tipo</span><strong>' + (pedido.tipo === "domicilio" ? "🏠 A domicilio" : "🏬 Recoger en el local") + "</strong></div>" +
       listaItems +
-      '<div class="fila"><span>Total</span><strong>' + formatoPesos(pedido.total) + "</strong></div>" +
+      '<div class="fila"><span>Total productos</span><strong>' + formatoPesos(pedido.total) + "</strong></div>" +
     "</div>" +
     '<div class="stepper-estado">' + pasos + "</div>";
 }
@@ -645,19 +709,20 @@ function iniciarBotonArriba() {
 // INICIO
 // ============================================================
 function init() {
+  restaurarCarrito();
   iniciarMarquesina();
   renderCategorias();
   renderMenu();
   actualizarResumenCarrito();
   iniciarScrollSpy();
   iniciarBotonArriba();
+  bloquearEnvioPendiente();
 
   const params = new URLSearchParams(window.location.search);
   const idEnLink = params.get("id");
   if (idEnLink) {
-    cambiarVista("seguimiento");
     $("#input-id-pedido").value = idEnLink;
-    buscarPedido(idEnLink);
+    cambiarVista("seguimiento");
   } else {
     try {
       const guardado = localStorage.getItem("lasfritas_ultimo_pedido");
@@ -666,4 +731,42 @@ function init() {
   }
 }
 
+function guardarCarrito() {
+  guardar("lasfritas_carrito_v2", { fecha: Date.now(), tipo: tipoEntrega, lineas: Object.values(carritoLineas).map(l => ({ id: l.producto.id, cantidad: l.cantidad, nota: l.nota })) });
+}
+function restaurarCarrito() {
+  const guardado = leerGuardado("lasfritas_carrito_v2");
+  const lineas = pedidoPendiente ? pedidoPendiente.items : guardado && Date.now() - guardado.fecha < 86400000 ? guardado.lineas : [];
+  if (Array.isArray(lineas)) lineas.slice(0, 60).forEach(l => {
+    const info = indiceProductos[l.id];
+    if (info && Number.isInteger(l.cantidad) && l.cantidad > 0) {
+      const nota = String(l.nota || "").slice(0, 200);
+      carritoLineas[lineId(l.id, nota)] = { producto: info.producto, categoria: info.categoria, cantidad: Math.min(50, l.cantidad), nota };
+    }
+  });
+  tipoEntrega = (pedidoPendiente?.tipo || guardado?.tipo) === "domicilio" ? "domicilio" : "local";
+  if (pedidoPendiente) {
+    $("#campo-nombre").value = pedidoPendiente.cliente || "";
+    $("#campo-telefono").value = pedidoPendiente.telefono || "";
+    $("#campo-direccion").value = pedidoPendiente.direccion || "";
+    $("#campo-notas").value = pedidoPendiente.notas || "";
+  }
+  $("#btn-tipo-local").classList.toggle("activo", tipoEntrega === "local");
+  $("#btn-tipo-domicilio").classList.toggle("activo", tipoEntrega === "domicilio");
+  $("#btn-tipo-local").setAttribute("aria-pressed", String(tipoEntrega === "local"));
+  $("#btn-tipo-domicilio").setAttribute("aria-pressed", String(tipoEntrega === "domicilio"));
+  $("#campo-direccion-wrap").classList.toggle("oculto", tipoEntrega !== "domicilio");
+  $("#aviso-domicilio").classList.toggle("oculto", tipoEntrega !== "domicilio");
+}
+function bloquearEnvioPendiente() {
+  const bloqueado = !!pedidoPendiente || envioEnCurso;
+  document.querySelectorAll("#overlay-carrito input, #overlay-carrito textarea, [data-tipo]").forEach(el => { el.disabled = bloqueado; });
+  $("#envio-pendiente").classList.toggle("oculto", !pedidoPendiente);
+  if (!envioEnCurso) $("#btn-enviar-pedido").textContent = pedidoPendiente ? "Reintentar el mismo pedido" : "Enviar pedido";
+}
+function enlaceSeguimiento(id) {
+  const url = new URL("index.html", location.href);
+  url.searchParams.set("id", id);
+  return url.href;
+}
 init();

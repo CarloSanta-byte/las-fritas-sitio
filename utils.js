@@ -24,14 +24,11 @@ async function apiPost(payload) {
   if (!API_URL || API_URL.indexOf("http") !== 0) {
     throw new Error("Falta configurar API_URL en config.js");
   }
-  const res = await fetch(API_URL, {
+  return solicitarApi(API_URL, {
     method: "POST",
     headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify(payload),
   });
-  const data = await res.json();
-  if (!data.ok) throw new Error(data.error || "Error desconocido");
-  return data;
 }
 
 async function apiGet(params) {
@@ -39,10 +36,44 @@ async function apiGet(params) {
     throw new Error("Falta configurar API_URL en config.js");
   }
   const query = params ? "?" + new URLSearchParams(params).toString() : "";
-  const res = await fetch(API_URL + query);
-  const data = await res.json();
-  if (!data.ok) throw new Error(data.error || "Error desconocido");
-  return data;
+  return solicitarApi(API_URL + query, { cache: "no-store" });
+}
+
+async function solicitarApi(url, opciones) {
+  if (!navigator.onLine) throw new Error("No hay conexión. Tu carrito sigue guardado.");
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 25000);
+  try {
+    const res = await fetch(url, { ...opciones, signal: controller.signal, redirect: "follow" });
+    if (!res.ok) throw new Error("El servidor no respondió correctamente. Intenta de nuevo.");
+    const data = await res.json();
+    if (!data.ok) {
+      const error = new Error(data.error || "No se pudo completar la solicitud.");
+      error.code = data.code;
+      error.confirmado = true;
+      throw error;
+    }
+    return data;
+  } catch (error) {
+    if (error.name === "AbortError") throw new Error("La conexión tardó demasiado. Reintenta para confirmar el mismo pedido.");
+    throw error;
+  } finally { clearTimeout(timeout); }
+}
+
+function htmlSeguro(texto) {
+  return String(texto == null ? "" : texto).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function leerGuardado(clave, valorInicial = null, tipoAlmacen = "local") {
+  try { const almacen = tipoAlmacen === "session" ? window.sessionStorage : window.localStorage; return JSON.parse(almacen.getItem(clave)) ?? valorInicial; } catch (_) { return valorInicial; }
+}
+function guardar(clave, valor, tipoAlmacen = "local") {
+  try { const almacen = tipoAlmacen === "session" ? window.sessionStorage : window.localStorage; almacen.setItem(clave, JSON.stringify(valor)); return true; } catch (_) { return false; }
+}
+function leerItems(pedido) {
+  try { const items = typeof pedido.items === "string" ? JSON.parse(pedido.items) : pedido.items; return Array.isArray(items) ? items : []; } catch (_) { return []; }
+}
+function fechaColombia(fecha = new Date()) {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Bogota", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(fecha));
 }
 
 function estadoInfo(clave) {
