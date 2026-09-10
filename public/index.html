@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Las Fritas · Con todo.</title>
+    <meta
+      name="description"
+      content="Elige, personaliza y pide en Las Fritas Salchipapería, Villavicencio. Para recoger o a domicilio."
+    />
+    <meta name="theme-color" content="#f5b921" />
+    <meta name="referrer" content="no-referrer" />
+    <link rel="icon" href="assets/icon.svg" />
+    <link rel="apple-touch-icon" href="assets/icon-192.png" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="stylesheet" href="css/tokens.css" />
+    <link rel="stylesheet" href="css/cliente.css" />
+    <script src="config.js" defer></script>
+    <script src="js/shared.js" defer></script>
+    <script src="js/presentation.js" defer></script>
+    <script src="js/cart.js" defer></script>
+    <script src="js/cliente.js" defer></script>
+  </head>
+  <body>
+    <a class="skip" href="#menu">Saltar al menú</a>
+    <header class="masthead">
+      <a class="wordmark" href="index.html" aria-label="LAS FRITAS. Menú"
+        >LAS <span>FRITAS<span class="brand-dot">.</span></span></a
+      ><span class="location">SALCHIPAPERÍA<br />VILLAVICENCIO, META</span
+      ><button class="plain tracking-open" type="button">
+        Mi pedido <span aria-hidden="true">↗</span>
+      </button>
+    </header>
+    <div id="network" class="network" role="status" hidden></div>
+    <div class="brand-line">
+      <span>CON TODO, SI NO PA’ QUÉ.</span
+      ><button id="motion-toggle" type="button" aria-pressed="false">
+        Pausar animaciones
+      </button>
+    </div>
+    <main id="menu-view">
+      <div class="menu-layout">
+        <div class="menu-main">
+          <div class="menu-tools">
+            <label class="search"
+              ><span aria-hidden="true">⌕</span
+              ><input
+                id="search"
+                type="search"
+                placeholder="Busca tu antojo o ingrediente"
+                aria-label="Buscar plato o ingrediente"
+              /><button id="clear-search" aria-label="Limpiar búsqueda" hidden>
+                ×
+              </button></label
+            >
+            <nav id="categories" aria-label="Categorías"></nav>
+          </div>
+          <section id="menu" tabindex="-1">
+            <div class="section-head">
+              <div>
+                <span class="eyebrow">EL ANTOJO MANDA</span>
+                <h1 id="category-title">Salchi Papas<span>.</span></h1>
+              </div>
+              <button id="surprise" class="surprise" type="button">
+                <span aria-hidden="true">✳</span> Sorpréndeme
+              </button>
+            </div>
+            <div id="filter-meta"></div>
+            <div id="products" class="products"></div>
+          </section>
+          <div class="menu-foot">
+            <span>LA DIETA QUEDA PA’ MAÑANA.</span>
+            <p>
+              Precios en pesos colombianos. El total corresponde a productos;
+              cobertura y costo de domicilio se confirman con el local.
+            </p>
+            <button id="install" class="plain" hidden>Instalar app</button
+            ><button id="sensory" class="plain" aria-pressed="false">
+              Sonido y vibración: apagados</button
+            ><button id="forget" class="plain">
+              Borrar mis datos recordados
+            </button>
+          </div>
+        </div>
+        <aside
+          id="desktop-tray"
+          class="desktop-tray"
+          aria-label="Resumen de tu pedido"
+        ></aside>
+      </div>
+    </main>
+    <main id="tracking-view" class="tracking-page" hidden>
+      <button id="back-menu" class="plain">← Volver al menú</button>
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">DEL ANTOJO A TU MESA</span>
+          <h1>Tu ticket<span>.</span></h1>
+        </div>
+      </div>
+      <form id="tracking-form" class="tracking-form">
+        <label for="tracking-code">Código de pedido</label>
+        <div>
+          <input
+            id="tracking-code"
+            maxlength="32"
+            autocomplete="off"
+            autocapitalize="none"
+            spellcheck="false"
+            pattern="[a-fA-F0-9]{8,32}"
+            required
+          /><button class="button primary">Ver estado</button>
+        </div>
+      </form>
+      <p id="tracking-status" role="status"></p>
+      <div id="tracking-result"></div>
+    </main>
+    <button id="tray-bar" class="tray-bar" hidden>
+      <span class="tray-symbol" aria-hidden="true">▰</span
+      ><span>Tu pedido <b id="tray-count"></b></span
+      ><strong id="tray-total"></strong><span aria-hidden="true">↗</span>
+    </button>
+    <div id="compare-bar" class="compare-bar" hidden>
+      <span id="compare-count"></span
+      ><button id="compare-open" class="button">Comparar</button
+      ><button id="compare-clear" class="plain">Limpiar</button>
+    </div>
+    <dialog id="detail-dialog" class="sheet" aria-labelledby="detail-title">
+      <div class="dialog-head">
+        <span class="eyebrow">A TU GUSTO</span
+        ><button class="close" data-close aria-label="Cerrar detalle">×</button>
+      </div>
+      <div id="detail-body"></div>
+    </dialog>
+    <dialog
+      id="cart-dialog"
+      class="sheet cart-sheet"
+      aria-labelledby="cart-title"
+    >
+      <div class="dialog-head">
+        <h2 id="cart-title">Tu pedido<span>.</span></h2>
+        <button class="close" data-close aria-label="Cerrar pedido">×</button>
+      </div>
+      <div id="cart-body"></div>
+      <form id="checkout" novalidate>
+        <div id="pending-warning" class="notice" role="status" hidden>
+          Estamos confirmando el envío anterior. Conservamos su contenido
+          original para recuperar el código sin duplicarlo.
+        </div>
+        <fieldset id="checkout-fields">
+          <legend>¿Cómo lo quieres?</legend>
+          <div class="delivery-options">
+            <label
+              ><input type="radio" name="tipo" value="local" checked /><span
+                >Recoger en el local</span
+              ></label
+            ><label
+              ><input type="radio" name="tipo" value="domicilio" /><span
+                >A domicilio</span
+              ></label
+            >
+          </div>
+          <div id="address-wrap" hidden>
+            <p class="notice">
+              Cobertura y costo de domicilio por confirmar con el local. El
+              total incluye solo productos.
+            </p>
+            <label for="address">Dirección de entrega</label
+            ><input
+              id="address"
+              name="direccion"
+              maxlength="250"
+              autocomplete="street-address"
+            /><small id="address-error" class="field-error"></small>
+          </div>
+          <div class="contact-fields">
+            <div>
+              <label for="name">Tu nombre</label
+              ><input
+                id="name"
+                name="cliente"
+                maxlength="80"
+                autocomplete="name"
+                required
+                aria-describedby="name-error"
+              /><small id="name-error" class="field-error"></small>
+            </div>
+            <div>
+              <label for="phone">Teléfono de contacto</label
+              ><input
+                id="phone"
+                name="telefono"
+                type="tel"
+                maxlength="24"
+                autocomplete="tel"
+                required
+                aria-describedby="phone-error"
+              /><small id="phone-error" class="field-error"></small>
+            </div>
+          </div>
+          <details class="order-notes">
+            <summary>Notas generales (opcional)</summary>
+            <label for="notes">Indicaciones para este pedido</label
+            ><textarea
+              id="notes"
+              name="notas"
+              maxlength="500"
+              rows="2"
+            ></textarea>
+          </details>
+          <label class="check-row remember"
+            ><input id="remember" type="checkbox" />Recordar mis datos en este
+            dispositivo por 30 días</label
+          >
+        </fieldset>
+        <p
+          id="checkout-error"
+          class="notice error"
+          role="alert"
+          tabindex="-1"
+          hidden
+        ></p>
+        <div class="checkout-submit">
+          <button id="send" class="button primary">Enviar pedido</button>
+        </div>
+        <p class="privacy">
+          Usamos tus datos para gestionar el pedido. Guardamos tu carrito 24
+          horas. Un envío sin confirmar conserva sus datos hasta recuperar la
+          respuesta.
+        </p>
+      </form>
+    </dialog>
+    <dialog
+      id="compare-dialog"
+      class="sheet wide"
+      aria-labelledby="compare-title"
+    >
+      <div class="dialog-head">
+        <h2 id="compare-title">Elige tu salchi<span>.</span></h2>
+        <button class="close" data-close aria-label="Cerrar comparación">
+          ×
+        </button>
+      </div>
+      <p>
+        Ingredientes mencionados en el menú. No son una declaración de alérgenos
+        ni de ausencia de ingredientes.
+      </p>
+      <div id="comparison"></div>
+    </dialog>
+    <dialog id="categories-dialog" class="sheet" aria-labelledby="all-title">
+      <div class="dialog-head">
+        <h2 id="all-title">Todos los antojos<span>.</span></h2>
+        <button class="close" data-close aria-label="Cerrar categorías">
+          ×
+        </button>
+      </div>
+      <div id="category-index"></div>
+    </dialog>
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden>
+      <span></span><button hidden>Deshacer</button>
+    </div>
+    <div
+      id="cart-live"
+      class="sr-only"
+      aria-live="polite"
+      aria-atomic="true"
+    ></div>
+    <noscript
+      ><p class="notice">
+        Activa JavaScript para explorar el menú y hacer tu pedido.
+      </p></noscript
+    >
+  </body>
+</html>

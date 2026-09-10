@@ -1,0 +1,48 @@
+@page {
+  size: auto;
+  margin: 3mm;
+}
+body {
+  background: #fff !important;
+  color: #000 !important;
+}
+body > *:not(#print-ticket) {
+  display: none !important;
+}
+#print-ticket[hidden],
+#print-ticket {
+  display: block !important;
+  width: 72mm;
+  max-width: 100%;
+  font: 12px/1.4 monospace;
+  color: #000;
+  background: #fff;
+}
+#print-ticket h1 {
+  font-size: 22px;
+  margin: 0;
+}
+#print-ticket h2 {
+  font-size: 16px;
+  overflow-wrap: anywhere;
+  letter-spacing: 0;
+}
+#print-ticket p {
+  margin: 6px 0;
+  overflow-wrap: anywhere;
+}
+#print-ticket ul {
+  list-style: none;
+  padding: 0;
+}
+#print-ticket li {
+  break-inside: avoid;
+  margin: 12px 0;
+}
+#print-ticket hr {
+  border: 0;
+  border-top: 1px dashed #000;
+}
+#print-ticket * {
+  color: #000 !important;
+}

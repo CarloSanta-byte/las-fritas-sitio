@@ -1,0 +1,212 @@
+[
+  {
+    "file": "assets\\icon-192.png",
+    "bytes": 3885,
+    "gzip": 3800
+  },
+  {
+    "file": "assets\\icon-512.png",
+    "bytes": 10125,
+    "gzip": 9351
+  },
+  {
+    "file": "assets\\icon.svg",
+    "bytes": 469,
+    "gzip": 306
+  },
+  {
+    "file": "assets\\illustrations\\bowl.svg",
+    "bytes": 658,
+    "gzip": 374
+  },
+  {
+    "file": "assets\\illustrations\\burger.svg",
+    "bytes": 593,
+    "gzip": 342
+  },
+  {
+    "file": "assets\\illustrations\\chicharrona.svg",
+    "bytes": 2288,
+    "gzip": 647
+  },
+  {
+    "file": "assets\\illustrations\\chorifritas.svg",
+    "bytes": 2183,
+    "gzip": 604
+  },
+  {
+    "file": "assets\\illustrations\\dog.svg",
+    "bytes": 548,
+    "gzip": 333
+  },
+  {
+    "file": "assets\\illustrations\\drink.svg",
+    "bytes": 573,
+    "gzip": 335
+  },
+  {
+    "file": "assets\\illustrations\\extra.svg",
+    "bytes": 361,
+    "gzip": 249
+  },
+  {
+    "file": "assets\\illustrations\\fries.svg",
+    "bytes": 1910,
+    "gzip": 532
+  },
+  {
+    "file": "assets\\illustrations\\la-power.svg",
+    "bytes": 2459,
+    "gzip": 686
+  },
+  {
+    "file": "assets\\illustrations\\mega-frita-queso.svg",
+    "bytes": 2001,
+    "gzip": 562
+  },
+  {
+    "file": "assets\\illustrations\\mega-frita.svg",
+    "bytes": 2935,
+    "gzip": 839
+  },
+  {
+    "file": "assets\\illustrations\\plantain.svg",
+    "bytes": 486,
+    "gzip": 286
+  },
+  {
+    "file": "assets\\illustrations\\salchi-atun.svg",
+    "bytes": 2374,
+    "gzip": 675
+  },
+  {
+    "file": "assets\\illustrations\\salchi-bacon.svg",
+    "bytes": 2251,
+    "gzip": 636
+  },
+  {
+    "file": "assets\\illustrations\\salchi-carnivora.svg",
+    "bytes": 2340,
+    "gzip": 647
+  },
+  {
+    "file": "assets\\illustrations\\salchi-costi.svg",
+    "bytes": 2280,
+    "gzip": 647
+  },
+  {
+    "file": "assets\\illustrations\\salchi-madurita.svg",
+    "bytes": 2077,
+    "gzip": 568
+  },
+  {
+    "file": "assets\\illustrations\\salchi-mixta.svg",
+    "bytes": 2186,
+    "gzip": 635
+  },
+  {
+    "file": "assets\\illustrations\\salchi-nacho.svg",
+    "bytes": 2479,
+    "gzip": 725
+  },
+  {
+    "file": "assets\\illustrations\\salchi-pollo.svg",
+    "bytes": 2356,
+    "gzip": 658
+  },
+  {
+    "file": "assets\\illustrations\\salchi-quesuda.svg",
+    "bytes": 1910,
+    "gzip": 532
+  },
+  {
+    "file": "assets\\illustrations\\tray.svg",
+    "bytes": 343,
+    "gzip": 237
+  },
+  {
+    "file": "assets\\illustrations\\trifasica.svg",
+    "bytes": 2420,
+    "gzip": 685
+  },
+  {
+    "file": "config.js",
+    "bytes": 14635,
+    "gzip": 3444
+  },
+  {
+    "file": "css\\cliente.css",
+    "bytes": 18059,
+    "gzip": 3742
+  },
+  {
+    "file": "css\\cocina.css",
+    "bytes": 8349,
+    "gzip": 2012
+  },
+  {
+    "file": "css\\print.css",
+    "bytes": 765,
+    "gzip": 343
+  },
+  {
+    "file": "css\\tokens.css",
+    "bytes": 5183,
+    "gzip": 1721
+  },
+  {
+    "file": "index.html",
+    "bytes": 10057,
+    "gzip": 3010
+  },
+  {
+    "file": "js\\cart.js",
+    "bytes": 6868,
+    "gzip": 2099
+  },
+  {
+    "file": "js\\cliente.js",
+    "bytes": 32962,
+    "gzip": 9942
+  },
+  {
+    "file": "js\\cocina.js",
+    "bytes": 17155,
+    "gzip": 5481
+  },
+  {
+    "file": "js\\presentation.js",
+    "bytes": 2248,
+    "gzip": 929
+  },
+  {
+    "file": "js\\shared.js",
+    "bytes": 6800,
+    "gzip": 2584
+  },
+  {
+    "file": "manifest.webmanifest",
+    "bytes": 399,
+    "gzip": 238
+  },
+  {
+    "file": "offline.html",
+    "bytes": 601,
+    "gzip": 412
+  },
+  {
+    "file": "staff.html",
+    "bytes": 4721,
+    "gzip": 1634
+  },
+  {
+    "file": "sw.js",
+    "bytes": 2187,
+    "gzip": 894
+  },
+  {
+    "file": "_headers",
+    "bytes": 509,
+    "gzip": 237
+  }
+]

@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Las Fritas · Cocina</title>
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <link rel="icon" href="assets/icon.svg" />
+    <link rel="stylesheet" href="css/tokens.css" />
+    <link rel="stylesheet" href="css/cocina.css" />
+    <link rel="stylesheet" href="css/print.css" media="print" />
+    <script src="config.js" defer></script>
+    <script src="js/shared.js" defer></script>
+    <script src="js/cocina.js" defer></script>
+  </head>
+  <body class="kitchen">
+    <a class="skip" href="#queue">Saltar a pedidos</a>
+    <header class="kitchen-header">
+      <div>
+        <span class="eyebrow">LAS FRITAS · EQUIPO</span>
+        <h1>Que no se enfríe<span>.</span></h1>
+      </div>
+      <div class="kitchen-controls" id="kitchen-controls" hidden>
+        <span id="connection" role="status">Conectando…</span
+        ><button id="sound" class="button" aria-pressed="false">
+          Activar sonido</button
+        ><button id="refresh" class="button">Actualizar</button
+        ><button id="logout" class="plain">Cerrar sesión</button>
+      </div>
+    </header>
+    <form id="login" class="login">
+      <span class="eyebrow">TODO LISTO PARA EL SERVICIO</span>
+      <h2>Entra a cocina<span>.</span></h2>
+      <label for="staff-key">Clave del local</label
+      ><input
+        id="staff-key"
+        type="password"
+        maxlength="200"
+        autocomplete="current-password"
+        required
+      />
+      <p id="login-error" role="alert"></p>
+      <button class="button primary" id="login-submit">Entrar a cocina</button>
+    </form>
+    <main id="kitchen-panel" hidden>
+      <div class="alert-slot">
+        <div id="new-alert" class="new-alert" role="alert" hidden>
+          <strong id="new-count"></strong
+          ><button id="review-new" class="button">Ver recibidos</button>
+        </div>
+      </div>
+      <div class="kitchen-toolbar">
+        <div
+          id="state-filters"
+          class="state-filters"
+          role="group"
+          aria-label="Filtrar pedidos"
+        ></div>
+        <label class="kitchen-search"
+          ><input
+            id="staff-search"
+            type="search"
+            placeholder="Nombre, teléfono o código"
+            aria-label="Buscar pedidos por nombre, teléfono o código" /></label
+        ><button id="summary-open" class="plain">Resumen del día</button
+        ><button id="large-mode" class="plain" aria-pressed="false">
+          Letra grande
+        </button>
+      </div>
+      <div class="kitchen-layout">
+        <section class="queue-wrap" aria-label="Cola de pedidos">
+          <div class="queue-heading">
+            <span id="queue-count"></span><span>MÁS ANTIGUOS PRIMERO</span>
+          </div>
+          <div id="queue" tabindex="-1"></div>
+        </section>
+        <section
+          id="order-detail"
+          class="order-detail"
+          aria-label="Pedido seleccionado"
+          tabindex="-1"
+        >
+          <div class="empty">
+            <h2>Selecciona un pedido.</h2>
+            <p>Aquí aparecen sus productos, notas y la siguiente acción.</p>
+          </div>
+        </section>
+      </div>
+    </main>
+    <dialog id="summary-dialog" class="sheet" aria-labelledby="summary-title">
+      <div class="dialog-head">
+        <h2 id="summary-title">El día en pedidos<span>.</span></h2>
+        <button class="close" data-close aria-label="Cerrar resumen">×</button>
+      </div>
+      <div id="summary-body"></div>
+      <p class="small">
+        Por fecha de creación, de 00:00 a 23:59 en Colombia. Incluye solo
+        productos. Estas cifras no confirman pagos ni son un cierre de caja.
+      </p>
+    </dialog>
+    <dialog id="correct-dialog" class="sheet" aria-labelledby="correct-title">
+      <div class="dialog-head">
+        <h2 id="correct-title">Corregir estado<span>.</span></h2>
+        <button class="close" data-close aria-label="Cerrar corrección">
+          ×
+        </button>
+      </div>
+      <p id="correct-description"></p>
+      <label for="correct-state">Nuevo estado</label
+      ><select id="correct-state"></select>
+      <p class="small">
+        Revisa el pedido antes de confirmar. Esta corrección cambia el estado
+        que ve el cliente.
+      </p>
+      <button id="correct-confirm" class="button primary">
+        Confirmar corrección
+      </button>
+    </dialog>
+    <div id="toast" class="toast" role="status" hidden><span></span></div>
+    <section id="print-ticket" hidden aria-label="Ticket de cocina"></section>
+  </body>
+</html>
