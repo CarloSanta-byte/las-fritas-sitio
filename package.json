@@ -1,14 +1,16 @@
 {
-  "name": "las-fritas-con-todo",
-  "version": "3.0.0",
+  "name": "las-fritas-procesos-v2",
+  "version": "4.0.0",
   "private": true,
   "description": "Sitio estático de Las Fritas. Las dependencias son solo herramientas de prueba.",
   "scripts": {
     "start": "node tests/serve.cjs",
-    "test": "node tests/backend.test.cjs && node tests/cart.test.cjs && node tests/browser.test.cjs && node tests/advanced.test.cjs && node tests/zoom.test.cjs && node tests/static.test.cjs",
+    "test": "node tests/backend.test.cjs && node tests/cart.test.cjs && node tests/medicion.test.cjs && node tests/browser.test.cjs && node tests/advanced.test.cjs && node tests/v2-browser.test.cjs && node tests/movimiento.test.cjs && node tests/zoom.test.cjs && node tests/static.test.cjs",
     "test:browser": "node tests/browser.test.cjs",
     "test:performance": "node tests/performance.cjs",
-    "test:advanced": "node tests/advanced.test.cjs"
+    "test:advanced": "node tests/advanced.test.cjs",
+    "test:scale": "node tests/escala.test.cjs",
+    "test:v2": "node tests/medicion.test.cjs && node tests/v2-browser.test.cjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",

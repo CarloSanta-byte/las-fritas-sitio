@@ -20,3 +20,15 @@
   X-Robots-Tag: noindex, nofollow
 /tests/*
   X-Robots-Tag: noindex, nofollow
+/js/panel.js
+  Cache-Control: no-store
+/js/analisis.js
+  Cache-Control: no-store
+/js/metricas.js
+  Cache-Control: no-store
+/js/metricas-worker.js
+  Cache-Control: no-store
+/js/mostrador.js
+  Cache-Control: no-store
+/css/analisis.css
+  Cache-Control: no-store

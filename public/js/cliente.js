@@ -38,6 +38,7 @@ function chooseCategory(i) {
   $("#search").value = "";
   renderMenu();
   $("#menu").scrollIntoView({ block: "start", behavior: "auto" });
+  window.Motion?.category();
 }
 $("#categories").innerHTML =
   '<button class="all-categories" id="all-categories">Todas</button>' +
@@ -81,6 +82,7 @@ $("#products").onclick = (e) => {
         return;
       }
       Cart.quick(p.id);
+      window.Motion?.fly(b);
       toast(p.nombre + " agregado");
       LF.animate(
         b,
@@ -196,6 +198,10 @@ function openDetail(id, key) {
   }
   const p = PRESENTATION.index[id];
   if (!p) return;
+  const source = document.querySelector(
+    `[data-product="${id}"] .product-art img`,
+  );
+  const sourceRect = source?.getBoundingClientRect();
   const b = Cart.blocks.find((x) => x.key === key);
   detailId = id;
   detailKey = key || null;
@@ -205,7 +211,7 @@ function openDetail(id, key) {
   const ref = b?.ref || String(Cart.next);
   const max = 200 - ("[Plato " + ref + "] ").length;
   $("#detail-body").innerHTML =
-    `<div class="detail-hero">${PRESENTATION.image(p)}<div><h2 id="detail-title">${safe(p.nombre)}</h2><span class="detail-price">${money(p.precio)}</span></div></div><p class="detail-original">${safe(p.descripcion)}</p>${id === "mega-frita-queso" ? '<p class="notice">El show de queso se realiza en la mesa según el menú. Confirma con el local cómo aplica si pides para recoger o a domicilio.</p>' : ""}${id === "granizado-licor" ? '<label class="check-row notice"><input id="adult" type="checkbox">Confirmo que soy mayor de edad.</label>' : ""}<label for="product-note">Indicaciones para este plato (opcional)</label><textarea id="product-note" maxlength="${max}" rows="2" placeholder="Por ejemplo: sin cebolla">${safe(b?.note || "")}</textarea><p class="small"><span id="note-left">${max - (b?.note || "").length}</span> caracteres disponibles. Escribe datos de contacto solo al enviar.</p><div class="quantity-row"><strong>Cantidad de platos</strong><div class="stepper"><button id="detail-minus" aria-label="Quitar una unidad">−</button><span id="detail-quantity">${detailQty}</span><button id="detail-plus" aria-label="Agregar una unidad">+</button></div></div>${hasExtras ? `<div class="extras"><h3>¿Le ponemos algo más?</h3><p class="small">Opcional. Las cantidades de adicionales son por cada plato.</p>${p.categoryIndex === 1 ? `<label class="check-row"><input id="combo" type="checkbox" ${detailExtras.some((x) => x.id === "combo-burger") ? "checked" : ""}>${safe(PRESENTATION.index["combo-burger"].nombre)} · ${money(8000)} por plato</label><div id="combo-options" class="combo-options" ${detailExtras.some((x) => x.id === "combo-burger") ? "" : "hidden"}>${comboFields(detailExtras.find((x) => x.id === "combo-burger")?.note)}</div>` : ""}<details><summary>Ver los 15 adicionales</summary>${MENU[9].items.map((x) => `<div class="extra-row"><label for="extra-${x.id}">${safe(x.nombre)}<br><strong>${money(x.precio)}</strong></label><select id="extra-${x.id}" data-extra="${x.id}" aria-label="Cantidad de ${safe(x.nombre)} por plato">${Array.from({ length: 51 }, (_, i) => `<option value="${i}" ${detailExtras.find((a) => a.id === x.id)?.perUnit === i ? "selected" : ""}>${i}</option>`).join("")}</select></div>`).join("")}</details></div>` : id === "combo-burger" ? `<div class="combo-options">${comboFields(b?.note)}</div>` : ""}<div class="detail-actions"><p id="detail-breakdown" class="detail-breakdown"></p><button id="detail-add" class="button primary">${key ? "Guardar cambios" : "Agregar al pedido"}</button></div>`;
+    `<div class="detail-hero">${PRESENTATION.image(p)}<div><h2 id="detail-title">${safe(p.nombre)}</h2><span class="detail-price">${money(p.precio)}</span></div></div><p class="detail-original">${safe(p.descripcion)}</p>${id === "mega-frita-queso" ? '<p class="notice">El show de queso se realiza en la mesa según el menú. Confirma con el local cómo aplica si pides para recoger o a domicilio.</p>' : ""}${id === "granizado-licor" ? '<label class="check-row notice"><input id="adult" type="checkbox">Confirmo que soy mayor de edad.</label>' : ""}<label for="product-note">Indicaciones para este plato (opcional)</label><textarea id="product-note" maxlength="${max}" rows="2" placeholder="Por ejemplo: sin cebolla">${safe(b?.note || "")}</textarea><p class="small"><span id="note-left">${max - (b?.note || "").length}</span> caracteres disponibles. Escribe datos de contacto solo al enviar.</p><div class="quantity-row"><strong>Cantidad de platos</strong><div class="stepper"><button id="detail-minus" aria-label="Quitar una unidad">−</button><span id="detail-quantity">${detailQty}</span><button id="detail-plus" aria-label="Agregar una unidad">+</button></div></div>${hasExtras ? `<div class="extras"><h3>¿Le ponemos algo más?</h3><p class="small">Opcional. Las cantidades de adicionales son por cada plato.</p>${p.categoryIndex === 1 ? `<label class="check-row"><input id="combo" type="checkbox" ${detailExtras.some((x) => x.id === "combo-burger") ? "checked" : ""}>${safe(PRESENTATION.index["combo-burger"].nombre)} · ${money(8000)} por plato</label><div id="combo-options" class="combo-options" ${detailExtras.some((x) => x.id === "combo-burger") ? "" : "hidden"}>${comboFields(detailExtras.find((x) => x.id === "combo-burger")?.note)}</div>` : ""}<details><summary>Ver los 15 adicionales</summary><div id="extras-options"></div></details></div>` : id === "combo-burger" ? `<div class="combo-options">${comboFields(b?.note)}</div>` : ""}<div class="detail-actions"><p id="detail-breakdown" class="detail-breakdown"></p><button id="detail-add" class="button primary">${key ? "Guardar cambios" : "Agregar al pedido"}</button></div>`;
   $("#detail-minus").onclick = () => {
     detailQty = Math.max(1, detailQty - 1);
     updateDetail();
@@ -217,19 +223,30 @@ function openDetail(id, key) {
   $("#product-note").oninput = () => {
     $("#note-left").textContent = max - $("#product-note").value.length;
   };
-  all("[data-extra]", $("#detail-body")).forEach(
-    (s) =>
-      (s.onchange = () => {
-        detailExtras = detailExtras.filter((x) => x.id !== s.dataset.extra);
-        if (Number(s.value))
-          detailExtras.push({
-            id: s.dataset.extra,
-            perUnit: Number(s.value),
-            note: "",
-          });
-        updateDetail();
-      }),
-  );
+  const extraSection = $(".extras details");
+  if (extraSection)
+    extraSection.addEventListener("toggle", () => {
+      if (!extraSection.open || $("#extras-options").childElementCount) return;
+      $("#extras-options").innerHTML = MENU[9].items
+        .map(
+          (x) =>
+            `<div class="extra-row"><label for="extra-${x.id}">${safe(x.nombre)}<br><strong>${money(x.precio)}</strong></label><select id="extra-${x.id}" data-extra="${x.id}" aria-label="Cantidad de ${safe(x.nombre)} por plato">${Array.from({ length: 51 }, (_, i) => `<option value="${i}" ${detailExtras.find((a) => a.id === x.id)?.perUnit === i ? "selected" : ""}>${i}</option>`).join("")}</select></div>`,
+        )
+        .join("");
+      all("[data-extra]", $("#detail-body")).forEach(
+        (s) =>
+          (s.onchange = () => {
+            detailExtras = detailExtras.filter((x) => x.id !== s.dataset.extra);
+            if (Number(s.value))
+              detailExtras.push({
+                id: s.dataset.extra,
+                perUnit: Number(s.value),
+                note: "",
+              });
+            updateDetail();
+          }),
+      );
+    });
   $("#combo")?.addEventListener("change", (e) => {
     $("#combo-options").hidden = !e.target.checked;
     detailExtras = detailExtras.filter((x) => x.id !== "combo-burger");
@@ -259,6 +276,7 @@ function openDetail(id, key) {
         else note = c + (note ? " · " + note : "");
       }
       Cart.add(id, detailQty, note, detailExtras, detailKey);
+      window.Motion?.fly($("#detail-add"));
       $("#detail-dialog").close();
       toast(key ? "Plato actualizado" : p.nombre + " agregado");
       feedback();
@@ -268,6 +286,7 @@ function openDetail(id, key) {
   };
   updateDetail();
   LF.open($("#detail-dialog"));
+  window.Motion?.connect(source, sourceRect, $(".detail-hero img"));
 }
 function comboFields(note = "") {
   return `<div><label for="combo-potato">Papa del combo</label><select id="combo-potato"><option value="">Elige una</option><option ${note?.includes("Papa francesa") ? "selected" : ""}>Papa francesa</option><option ${note?.includes("Papa criolla") ? "selected" : ""}>Papa criolla</option></select></div><div><label for="combo-drink">Bebida del combo</label><select id="combo-drink"><option value="">Elige una</option><option ${note?.includes("Gaseosa personal") ? "selected" : ""}>Gaseosa personal</option><option ${note?.includes("Limonada natural") ? "selected" : ""}>Limonada natural</option></select></div>`;
@@ -327,14 +346,7 @@ $("#surprise").onclick = () => {
   const options = pool.length ? pool : choices;
   const p = options[Math.floor(Math.random() * options.length)];
   openDetail(p.id);
-  LF.animate(
-    $(".detail-hero"),
-    [
-      { transform: "rotateY(-35deg)", opacity: 0.5 },
-      { transform: "rotateY(0)", opacity: 1 },
-    ],
-    360,
-  );
+  window.Motion?.surprise($(".detail-hero"), options, p);
 };
 
 function renderCart() {
@@ -511,6 +523,7 @@ $("#checkout").onsubmit = async (e) => {
     requestId: LF.uuid(),
   };
   Cart.busy = true;
+  window.Motion?.sending(true);
   const saved = Cart.lock(payload);
   renderCart();
   if (!saved) {
@@ -540,6 +553,7 @@ $("#checkout").onsubmit = async (e) => {
     $("#phone").value = "";
     $("#address").value = "";
     openTracking(data.id, true);
+    window.Motion?.celebrate();
     toast("¡Pedido registrado! Guarda tu ticket.");
     feedback();
   } catch (err) {
@@ -560,6 +574,7 @@ $("#checkout").onsubmit = async (e) => {
     error.focus();
   } finally {
     Cart.busy = false;
+    window.Motion?.sending(false);
     renderCart();
   }
 };
@@ -595,6 +610,7 @@ function openTracking(id, confirmed = false, push = true) {
     if (id) u.searchParams.set("id", id);
     history.pushState({ view: "tracking" }, "", u);
   }
+  window.Motion?.view(true);
   if (id) startTracking(id);
   else
     $("#tracking-result").innerHTML =
@@ -602,6 +618,7 @@ function openTracking(id, confirmed = false, push = true) {
   window.scrollTo(0, 0);
 }
 function backMenu(push = true) {
+  window.Motion?.view(false);
   stopTracking();
   $("#tracking-view").hidden = true;
   $("#menu-view").hidden = false;
@@ -688,6 +705,7 @@ async function consultTracking(id, version) {
   }
 }
 function renderTracking(p) {
+  const previousState = lastTracking?.estado;
   const info = ESTADOS.find((s) => s.key === p.estado) || ESTADOS[0];
   const words = {
     Recibido: "Tu pedido quedó registrado.",
@@ -718,6 +736,7 @@ function renderTracking(p) {
       .join(
         "",
       )}</div><div class="checkout-total"><span>Total productos</span><span>${money(p.total)}</span></div><div class="ticket-actions"><button class="button" id="copy-ticket">Copiar enlace</button><a class="button" href="https://wa.me/${MARCA.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(message)}" target="_blank" rel="noopener noreferrer">WhatsApp ↗</a></div><p class="small" style="margin:16px 0 0">El enlace permite consultar los productos y sus notas. Compártelo solo con quien corresponda.</p></article>`;
+  window.Motion?.tracking(p, previousState);
   $("#copy-ticket").onclick = async () => {
     try {
       await navigator.clipboard.writeText(link);
@@ -769,14 +788,13 @@ window.addEventListener("popstate", () => {
 let sensory = LF.read("lasfritas_sensory", false);
 let audio;
 function sensoryLabel() {
-  $("#sensory").textContent =
-    "Sonido y vibración: " + (sensory ? "activados" : "apagados");
+  $("#sensory").textContent = "Sonido: " + (sensory ? "activado" : "apagado");
   $("#sensory").setAttribute("aria-pressed", String(sensory));
 }
 sensoryLabel();
 function feedback() {
   if (!sensory) return;
-  navigator.vibrate?.(15);
+  window.Motion?.haptic();
   try {
     audio ??= new (window.AudioContext || window.webkitAudioContext)();
     audio.resume();
@@ -829,3 +847,5 @@ if (initialId) openTracking(initialId, false, false);
 else if (location.hash === "#mi-pedido") openTracking("", false, false);
 if (Cart.pending)
   toast("Tienes un envío pendiente. Abre tu pedido para recuperar su código.");
+
+$("#nav-order").onclick = () => backMenu();

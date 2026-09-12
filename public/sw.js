@@ -1,5 +1,5 @@
 /* Actualizar VERSION y la lista de recursos juntos. Nunca activar sobre una pestaña abierta. */
-const VERSION = "lasfritas-publico-con-todo-20260910-1";
+const VERSION = "lasfritas-publico-procesos-20260911-1";
 const FILES = [
   "./",
   "index.html",
@@ -10,6 +10,8 @@ const FILES = [
   "js/presentation.js",
   "js/cart.js",
   "js/cliente.js",
+  "js/motion.js",
+  "css/motion.css",
   "manifest.webmanifest",
   "offline.html",
   "assets/icon.svg",

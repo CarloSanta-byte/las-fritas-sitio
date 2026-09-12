@@ -18,10 +18,12 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="stylesheet" href="css/tokens.css" />
     <link rel="stylesheet" href="css/cliente.css" />
+    <link rel="stylesheet" href="css/motion.css" />
     <script src="config.js" defer></script>
     <script src="js/shared.js" defer></script>
     <script src="js/presentation.js" defer></script>
     <script src="js/cart.js" defer></script>
+    <script src="js/motion.js" defer></script>
     <script src="js/cliente.js" defer></script>
   </head>
   <body>
@@ -80,6 +82,10 @@
             <button id="install" class="plain" hidden>Instalar app</button
             ><button id="sensory" class="plain" aria-pressed="false">
               Sonido y vibración: apagados</button
+            ><button id="effects-mode" class="plain" aria-pressed="false">
+              Efectos completos</button
+            ><button id="haptic-toggle" class="plain" aria-pressed="false">
+              Vibración: apagada</button
             ><button id="forget" class="plain">
               Borrar mis datos recordados
             </button>
@@ -258,6 +264,10 @@
       </div>
       <div id="category-index"></div>
     </dialog>
+    <nav class="mobile-nav" aria-label="Pedido y seguimiento">
+      <button id="nav-order" aria-current="page">Pedir</button
+      ><button class="tracking-open" id="nav-tracking">Mi pedido</button>
+    </nav>
     <div id="toast" class="toast" role="status" aria-live="polite" hidden>
       <span></span><button hidden>Deshacer</button>
     </div>

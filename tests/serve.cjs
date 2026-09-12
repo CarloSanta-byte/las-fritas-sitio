@@ -31,5 +31,6 @@ const server = http.createServer((req, res) => {
   res.end(fs.readFileSync(file));
 });
 if (require.main === module)
-  server.listen(4173, "127.0.0.1", () => console.log("http://127.0.0.1:4173"));
+  server.listen(4174, "127.0.0.1", () => console.log("http://127.0.0.1:4174"));
 module.exports = { server };
+

@@ -3,7 +3,10 @@ const fs = require("node:fs"),
   { createRequire } = require("node:module"),
   { pathToFileURL } = require("node:url"),
   zlib = require("node:zlib");
+const {server}=require("./serve.cjs");
 (async () => {
+  await new Promise(resolve=>server.listen(0,"127.0.0.1",resolve));
+  const previewUrl="http://127.0.0.1:"+server.address().port;
   const { default: lighthouse } = await import("lighthouse");
   const requireLH = createRequire(require.resolve("lighthouse"));
   const launcher = await import(
@@ -19,12 +22,13 @@ const fs = require("node:fs"),
     chromeFlags: ["--headless", "--no-sandbox", "--disable-dev-shm-usage"],
   });
   try {
-    const result = await lighthouse("http://127.0.0.1:4173", {
+    const result = await lighthouse(previewUrl, {
       port: chrome.port,
       output: ["html", "json"],
       onlyCategories: ["performance", "accessibility", "best-practices"],
       logLevel: "error",
     });
+    if(result.lhr.runtimeError)throw Error(result.lhr.runtimeError.message);
     const out = path.join(__dirname, "../pruebas-visuales");
     fs.writeFileSync(path.join(out, "lighthouse.html"), result.report[0]);
     fs.writeFileSync(path.join(out, "lighthouse.json"), result.report[1]);
@@ -68,8 +72,11 @@ const fs = require("node:fs"),
     );
   } finally {
     await chrome.kill();
+    server.close();
   }
 })().catch((e) => {
   console.error(e);
+  server.close();
   process.exitCode = 1;
 });
+

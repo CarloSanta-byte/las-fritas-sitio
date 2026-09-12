@@ -242,8 +242,9 @@ comprobar(
     ]);
     b.preparar();
     assert.equal(s.rows.length, 2);
-    assert.equal(s.rows[0].length, 12);
+    assert.equal(s.rows[0].length, 22);
     assert.equal(b.get({ id: "a1b2c3d4" }).pedidos[0].total, 24000);
   },
 );
 console.log(pruebas + " pruebas de backend correctas.");
+

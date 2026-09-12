@@ -135,14 +135,24 @@
     "gzip": 3444
   },
   {
+    "file": "css\\analisis.css",
+    "bytes": 3517,
+    "gzip": 1061
+  },
+  {
     "file": "css\\cliente.css",
     "bytes": 18059,
     "gzip": 3742
   },
   {
     "file": "css\\cocina.css",
-    "bytes": 8349,
-    "gzip": 2012
+    "bytes": 12071,
+    "gzip": 2730
+  },
+  {
+    "file": "css\\motion.css",
+    "bytes": 3733,
+    "gzip": 1230
   },
   {
     "file": "css\\print.css",
@@ -156,23 +166,53 @@
   },
   {
     "file": "index.html",
-    "bytes": 10057,
-    "gzip": 3010
+    "bytes": 10600,
+    "gzip": 3128
+  },
+  {
+    "file": "js\\analisis.js",
+    "bytes": 17818,
+    "gzip": 6382
   },
   {
     "file": "js\\cart.js",
-    "bytes": 6868,
-    "gzip": 2099
+    "bytes": 6832,
+    "gzip": 2093
   },
   {
     "file": "js\\cliente.js",
-    "bytes": 32962,
-    "gzip": 9942
+    "bytes": 33825,
+    "gzip": 10177
   },
   {
     "file": "js\\cocina.js",
-    "bytes": 17155,
-    "gzip": 5481
+    "bytes": 18222,
+    "gzip": 5867
+  },
+  {
+    "file": "js\\metricas-worker.js",
+    "bytes": 238,
+    "gzip": 169
+  },
+  {
+    "file": "js\\metricas.js",
+    "bytes": 11213,
+    "gzip": 3618
+  },
+  {
+    "file": "js\\mostrador.js",
+    "bytes": 13146,
+    "gzip": 4259
+  },
+  {
+    "file": "js\\motion.js",
+    "bytes": 12971,
+    "gzip": 3722
+  },
+  {
+    "file": "js\\panel.js",
+    "bytes": 11133,
+    "gzip": 4100
   },
   {
     "file": "js\\presentation.js",
@@ -181,8 +221,8 @@
   },
   {
     "file": "js\\shared.js",
-    "bytes": 6800,
-    "gzip": 2584
+    "bytes": 7634,
+    "gzip": 2827
   },
   {
     "file": "manifest.webmanifest",
@@ -196,17 +236,17 @@
   },
   {
     "file": "staff.html",
-    "bytes": 4721,
-    "gzip": 1634
+    "bytes": 6068,
+    "gzip": 1916
   },
   {
     "file": "sw.js",
-    "bytes": 2187,
-    "gzip": 894
+    "bytes": 2311,
+    "gzip": 909
   },
   {
     "file": "_headers",
-    "bytes": 509,
-    "gzip": 237
+    "bytes": 769,
+    "gzip": 283
   }
 ]

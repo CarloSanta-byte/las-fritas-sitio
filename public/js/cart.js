@@ -23,20 +23,18 @@ const Cart = (() => {
     Date.now() - stored.date < 86400000 &&
     Array.isArray(stored.blocks)
   ) {
-    blocks = stored.blocks
-      .filter(valid)
-      .map((b) => ({
-        ...b,
-        extras: Array.isArray(b.extras)
-          ? b.extras.filter(
-              (x) =>
-                index[x.id] &&
-                Number.isInteger(x.perUnit) &&
-                x.perUnit > 0 &&
-                x.perUnit <= 50,
-            )
-          : [],
-      }));
+    blocks = stored.blocks.filter(valid).map((b) => ({
+      ...b,
+      extras: Array.isArray(b.extras)
+        ? b.extras.filter(
+            (x) =>
+              index[x.id] &&
+              Number.isInteger(x.perUnit) &&
+              x.perUnit > 0 &&
+              x.perUnit <= 50,
+          )
+        : [],
+    }));
     type = stored.type === "domicilio" ? "domicilio" : "local";
     next = Number.isInteger(stored.next) ? stored.next : blocks.length + 1;
   } else {

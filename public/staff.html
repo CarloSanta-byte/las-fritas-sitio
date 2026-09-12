@@ -13,6 +13,8 @@
     <script src="config.js" defer></script>
     <script src="js/shared.js" defer></script>
     <script src="js/cocina.js" defer></script>
+    <script src="js/presentation.js" defer></script>
+    <script src="js/panel.js" defer></script>
   </head>
   <body class="kitchen">
     <a class="skip" href="#queue">Saltar a pedidos</a>
@@ -50,43 +52,75 @@
           ><button id="review-new" class="button">Ver recibidos</button>
         </div>
       </div>
-      <div class="kitchen-toolbar">
-        <div
-          id="state-filters"
-          class="state-filters"
-          role="group"
-          aria-label="Filtrar pedidos"
-        ></div>
-        <label class="kitchen-search"
-          ><input
-            id="staff-search"
-            type="search"
-            placeholder="Nombre, teléfono o código"
-            aria-label="Buscar pedidos por nombre, teléfono o código" /></label
-        ><button id="summary-open" class="plain">Resumen del día</button
-        ><button id="large-mode" class="plain" aria-pressed="false">
-          Letra grande
-        </button>
-      </div>
-      <div class="kitchen-layout">
-        <section class="queue-wrap" aria-label="Cola de pedidos">
-          <div class="queue-heading">
-            <span id="queue-count"></span><span>MÁS ANTIGUOS PRIMERO</span>
-          </div>
-          <div id="queue" tabindex="-1"></div>
-        </section>
-        <section
-          id="order-detail"
-          class="order-detail"
-          aria-label="Pedido seleccionado"
-          tabindex="-1"
+      <nav class="panel-nav" aria-label="Vistas de cocina">
+        <button
+          class="button primary"
+          data-view="operacion"
+          aria-current="page"
         >
-          <div class="empty">
-            <h2>Selecciona un pedido.</h2>
-            <p>Aquí aparecen sus productos, notas y la siguiente acción.</p>
-          </div>
-        </section>
-      </div>
+          Operación
+        </button>
+        <button class="button" data-view="mostrador">
+          Nuevo pedido de mostrador
+        </button>
+        <button class="button" data-view="analisis">
+          Análisis del proceso
+        </button>
+      </nav>
+      <p id="backend-status" class="measurement-note" role="status"></p>
+      <section id="view-operacion">
+        <div class="kitchen-toolbar">
+          <div
+            id="state-filters"
+            class="state-filters"
+            role="group"
+            aria-label="Filtrar pedidos"
+          ></div>
+          <label class="kitchen-search"
+            ><input
+              id="staff-search"
+              type="search"
+              placeholder="Nombre, teléfono o código"
+              aria-label="Buscar pedidos por nombre, teléfono o código" /></label
+          ><button id="summary-open" class="plain">Resumen del día</button
+          ><button id="board-mode" class="plain" aria-pressed="false">
+            Ver columnas</button
+          ><button id="large-mode" class="plain" aria-pressed="false">
+            Letra grande
+          </button>
+        </div>
+        <div class="kitchen-layout">
+          <section class="queue-wrap" aria-label="Cola de pedidos">
+            <div class="queue-heading">
+              <span id="queue-count"></span><span>MÁS ANTIGUOS PRIMERO</span>
+            </div>
+            <div id="queue" tabindex="-1"></div>
+          </section>
+          <section
+            id="order-detail"
+            class="order-detail"
+            aria-label="Pedido seleccionado"
+            tabindex="-1"
+          >
+            <div class="empty">
+              <h2>Selecciona un pedido.</h2>
+              <p>Aquí aparecen sus productos, notas y la siguiente acción.</p>
+            </div>
+          </section>
+        </div>
+      </section>
+      <section
+        id="view-mostrador"
+        class="panel-view"
+        hidden
+        aria-label="Registro de mostrador"
+      ></section>
+      <section
+        id="view-analisis"
+        class="panel-view"
+        hidden
+        aria-label="Análisis del proceso"
+      ></section>
     </main>
     <dialog id="summary-dialog" class="sheet" aria-labelledby="summary-title">
       <div class="dialog-head">
@@ -113,6 +147,13 @@
         Revisa el pedido antes de confirmar. Esta corrección cambia el estado
         que ve el cliente.
       </p>
+      <label for="correct-reason">Motivo de la corrección</label
+      ><input
+        id="correct-reason"
+        maxlength="200"
+        required
+        placeholder="Por qué se cambia el estado"
+      />
       <button id="correct-confirm" class="button primary">
         Confirmar corrección
       </button>

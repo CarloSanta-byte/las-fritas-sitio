@@ -59,6 +59,12 @@ const LF = (() => {
   function toast(message, undo) {
     const box = $("#toast");
     if (!box) return;
+    // Un dialog modal está en la capa superior: el aviso interactivo debe vivir dentro.
+    const activeDialog = document.querySelector("dialog[open]");
+    if (activeDialog && box.parentElement !== activeDialog)
+      activeDialog.append(box);
+    else if (!activeDialog && box.parentElement !== document.body)
+      document.body.append(box);
     clearTimeout(toastTimer);
     $("span", box).textContent = message;
     const b = $("button", box);
@@ -67,6 +73,10 @@ const LF = (() => {
       b.onclick = () => {
         undo?.();
         box.hidden = true;
+        if (document.activeElement === b)
+          activeDialog
+            ?.querySelector("button:not(:disabled)")
+            ?.focus({ preventScroll: true });
       };
     }
     box.hidden = false;
@@ -125,10 +135,7 @@ const LF = (() => {
     return !paused && !reduced.matches && !document.hidden;
   }
   function syncMotion() {
-    document.documentElement.classList.toggle(
-      "paused",
-      paused || reduced.matches,
-    );
+    document.documentElement.classList.toggle("paused", !motionAllowed());
     const b = $("#motion-toggle");
     if (b) {
       b.textContent =
@@ -138,6 +145,7 @@ const LF = (() => {
       b.setAttribute("aria-pressed", String(paused || reduced.matches));
     }
     if (!motionAllowed()) document.getAnimations().forEach((a) => a.cancel());
+    document.dispatchEvent(new CustomEvent("lf:motion"));
   }
   $("#motion-toggle")?.addEventListener("click", () => {
     if (reduced.matches) {
@@ -152,12 +160,18 @@ const LF = (() => {
   document.addEventListener("visibilitychange", syncMotion);
   syncMotion();
   function animate(el, frames, ms = 220) {
-    if (el?.animate && motionAllowed())
+    if (
+      el?.animate &&
+      motionAllowed() &&
+      el.getBoundingClientRect().bottom > 0 &&
+      el.getBoundingClientRect().top < innerHeight
+    )
       el.animate(frames, { duration: ms, easing: "cubic-bezier(.2,.8,.2,1)" });
   }
   function open(dialog) {
     dialog._returnFocus = document.activeElement;
     dialog.showModal();
+    document.dispatchEvent(new CustomEvent("lf:dialog", { detail: dialog }));
     document.body.style.overflow = "hidden";
     animate(dialog, [
       { opacity: 0, transform: "translateY(18px)" },
@@ -169,6 +183,8 @@ const LF = (() => {
       if (e.target.closest("[data-close]")) d.close();
     });
     d.addEventListener("close", () => {
+      const notice = d.querySelector("#toast");
+      if (notice) document.body.append(notice);
       if (!document.querySelector("dialog[open]"))
         document.body.style.overflow = "";
       if (d._returnFocus?.isConnected)

@@ -25,6 +25,8 @@ function info(state) {
   return ESTADOS.find((s) => s.key === state) || ESTADOS[0];
 }
 function age(timestamp) {
+  if (!timestamp || !Number.isFinite(new Date(timestamp).getTime()))
+    return "Sin datos de tiempo";
   const n = Math.max(
     0,
     Math.floor((Date.now() - new Date(timestamp).getTime()) / 60000),
@@ -66,7 +68,7 @@ async function load() {
   const version = session;
   $("#refresh").disabled = true;
   try {
-    const data = await LF.request({ accion: "listar", token });
+    const data = await loadOperational(token);
     if (version !== session) return;
     if (!Array.isArray(data.pedidos))
       throw Error("La lista de pedidos no llegó completa.");
@@ -80,6 +82,8 @@ async function load() {
     $("#connection").classList.remove("stale");
     orders = data.pedidos;
     summary = data.resumen;
+    measurementVersion = data.versionMedicion || 0;
+    if (typeof updateBackendStatus === "function") updateBackendStatus();
     orders.forEach((p) => {
       if (
         p.estado === "Recibido" &&
@@ -158,6 +162,10 @@ function renderFilters() {
       ?.focus({ preventScroll: true });
 }
 function renderQueue() {
+  if (typeof renderBoard === "function" && boardMode) {
+    renderBoard();
+    return;
+  }
   const list = orders
     .filter(matches)
     .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
@@ -180,6 +188,7 @@ function renderQueue() {
     : '<div class="empty"><p>' +
       (search ? "Ningún pedido coincide." : "No hay pedidos en este estado.") +
       "</p></div>";
+  decorateTimers();
   $("#queue").scrollTop = scroll;
   if (focus)
     all("[data-select]")
@@ -227,10 +236,11 @@ function renderDetail() {
       e.currentTarget.dataset.previous,
     ),
   );
+  appendProcessDetail(p);
   $("#print").onclick = () => printOrder(p);
   $("#correct").onclick = () => openCorrection(p);
 }
-async function changeState(id, state, previous) {
+async function changeState(id, state, previous, correction = "") {
   if (changing || uncertain.has(id)) return;
   if (!navigator.onLine) {
     toast("Sin conexión. Conservamos el estado anterior.");
@@ -246,10 +256,13 @@ async function changeState(id, state, previous) {
       id,
       estado: state,
       estadoAnterior: previous,
+      operacionId: LF.uuid(),
+      ...(correction ? { correccion: true, motivoCorreccion: correction } : {}),
     });
     if (version !== session) return;
     const p = orders.find((p) => p.id === id);
     if (p) p.estado = state;
+    window.Analisis?.invalidate();
     unseen.delete(id);
     acknowledged.add(id);
     toast("Estado confirmado: " + state);
@@ -274,6 +287,7 @@ async function changeState(id, state, previous) {
   }
 }
 function openCorrection(p) {
+  $("#correct-reason").value = "";
   $("#correct-description").textContent =
     "Pedido #" + p.id + " · Estado actual: " + p.estado;
   $("#correct-state").innerHTML = LF.flow(p.tipo)
@@ -284,8 +298,13 @@ function openCorrection(p) {
     .join("");
   $("#correct-confirm").onclick = () => {
     const state = $("#correct-state").value;
+    const reason = $("#correct-reason").value.trim();
+    if (state !== p.estado && !reason) {
+      $("#correct-reason").reportValidity();
+      return;
+    }
     $("#correct-dialog").close();
-    if (state !== p.estado) changeState(p.id, state, p.estado);
+    if (state !== p.estado) changeState(p.id, state, p.estado, reason);
   };
   LF.open($("#correct-dialog"));
 }
@@ -344,6 +363,7 @@ $("#sound").onclick = async () => {
   }
 };
 $("#review-new").onclick = () => {
+  chooseView("operacion");
   filter = "Recibido";
   search = "";
   $("#staff-search").value = "";
@@ -356,6 +376,15 @@ $("#review-new").onclick = () => {
   $("#queue").focus();
 };
 $("#queue").onclick = (e) => {
+  const advance = e.target.closest("[data-advance]");
+  if (advance) {
+    changeState(
+      advance.dataset.id,
+      advance.dataset.advance,
+      advance.dataset.previous,
+    );
+    return;
+  }
   const b = e.target.closest("[data-select]");
   if (!b) return;
   selected = b.dataset.select;
@@ -426,6 +455,7 @@ window.addEventListener(
 );
 function logout() {
   session++;
+  resetPanel();
   clearTimeout(timer);
   clearInterval(timerSound);
   timerSound = null;
@@ -488,4 +518,7 @@ setInterval(() => {
     );
   });
 }, 30000);
-if (token) load();
+// El panel inicia la carga después de instalar las vistas y la compatibilidad.
+setTimeout(() => {
+  if (token) load();
+}, 0);

@@ -32,7 +32,7 @@ function test(name, fn) {
   count++;
   console.log("OK · " + name);
 }
-test("Catálogo y backend originales idénticos", () => {
+test("Catálogo público y catálogo del backend conservados", () => {
   const original = path.join(root, "../revision-original");
   if (fs.existsSync(original)) {
     assert.equal(
@@ -40,8 +40,8 @@ test("Catálogo y backend originales idénticos", () => {
       fs.readFileSync(path.join(original, "config.js"), "utf8"),
     );
     assert.equal(
-      fs.readFileSync(path.join(root, "apps-script/Code.gs"), "utf8"),
-      fs.readFileSync(path.join(original, "apps-script/Code.gs"), "utf8"),
+      vm.runInNewContext(fs.readFileSync(path.join(root, "apps-script/Code.gs"), "utf8") + "\nJSON.stringify(CATALOGO_INICIAL)"),
+      vm.runInNewContext(fs.readFileSync(path.join(original, "apps-script/Code.gs"), "utf8") + "\nJSON.stringify(CATALOGO_INICIAL)"),
     );
   }
 });

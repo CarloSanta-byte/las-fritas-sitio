@@ -1,4 +1,4 @@
-> Documento histórico del ZIP del 7 de septiembre. Sus instrucciones de cambiar sitio y backend juntos corresponden a aquella versión, no a esta entrega. En Con todo no cambió Code.gs. Consulta primero LEEME.md de esta carpeta.
+> Referencia histórica del ZIP del 7 de septiembre. No sigas esta guía para la nueva migración: Las Fritas v2 SÍ cambia Code.gs y añade medición. Usa LEEME.md de esta entrega.
 
 # Las Fritas · Proyecto actualizado
 Versión del 7 de septiembre de 2026. HTML, CSS y JavaScript puro; Google Sheets + Apps Script. No necesita npm, frameworks, compilación ni servicios de pago nuevos.
@@ -123,4 +123,5 @@ Para repetir las pruebas de lógica, una persona con Node instalado puede ejecut
 - Caché de una app web: https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers
 
 Las cuotas de Apps Script dependen del servicio, la cuenta y las políticas vigentes. La cifra anterior de «20.000 solicitudes diarias» no era una garantía para este sistema. Un historial muy grande y muchos dispositivos consultando pueden volver lento Google Sheets; consulta AUDITORIA.md para las siguientes mejoras.
+
 

@@ -1,0 +1,24 @@
+{
+  "simulado": true,
+  "nota": "Sin Google ni red; no establece capacidad de producción.",
+  "resultados": [
+    {
+      "filas": 1000,
+      "peticiones": 2,
+      "lecturaSimuladaMs": 12,
+      "calculoMs": 27
+    },
+    {
+      "filas": 10000,
+      "peticiones": 20,
+      "lecturaSimuladaMs": 87,
+      "calculoMs": 194
+    },
+    {
+      "filas": 50000,
+      "peticiones": 100,
+      "lecturaSimuladaMs": 474,
+      "calculoMs": 924
+    }
+  ]
+}

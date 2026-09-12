@@ -1,0 +1,210 @@
+.motion-particle {
+  position: fixed;
+  z-index: 1000;
+  pointer-events: none;
+  color: var(--pink);
+  font-size: 32px;
+  line-height: 1;
+}
+.motion-copy {
+  position: fixed;
+  z-index: 1000;
+  pointer-events: none;
+  object-fit: contain;
+  transform-origin: top left;
+}
+.confetti {
+  width: 8px;
+  height: 16px;
+  border-radius: 2px;
+}
+.surprise-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gold);
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  font-size: 1.5rem;
+  font-weight: 900;
+  padding: 20px;
+  pointer-events: none;
+}
+.detail-hero {
+  position: relative;
+}
+.tracking-progress {
+  height: 8px;
+  border-radius: 5px;
+  overflow: hidden;
+  background: #e2dbcb;
+  margin: 18px 0;
+}
+.tracking-progress span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #216452;
+  transform-origin: left;
+}
+.state-icon.motion-live {
+  animation: state-breathe 1.8s ease-in-out infinite;
+}
+.state-icon[data-state="En camino"].motion-live {
+  animation: state-ride 1.8s ease-in-out infinite;
+}
+.state-icon[data-state="Entregado"] {
+  animation: none;
+}
+.ticket.delivered .ticket-status {
+  background: #173d2e;
+}
+.ticket.delivered .ticket-status h2 {
+  color: #fff3c9;
+}
+.sending.motion-live {
+  animation: send-pulse 1.2s ease-in-out infinite;
+}
+.effects-lite .sending.motion-live {
+  animation: none;
+}
+@keyframes state-breathe {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-3px) scale(1.08);
+  }
+}
+@keyframes state-ride {
+  0%,
+  100% {
+    transform: translateX(-3px);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+}
+@keyframes send-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.68;
+  }
+}
+.mobile-nav {
+  display: none;
+}
+.brand-line button {
+  min-height: 44px;
+}
+.product-name {
+  min-height: 44px;
+}
+#products {
+  min-height: 70dvh;
+}
+.menu-foot {
+  padding-bottom: 90px;
+}
+.dialog-head {
+  touch-action: none;
+}
+#cart-body .block {
+  touch-action: pan-y;
+}
+.paused .motion-particle,
+.paused .motion-copy,
+.paused .surprise-overlay {
+  display: none !important;
+}
+@media (max-width: 999px) {
+  .mobile-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 5;
+    background: var(--paper);
+    border-top: 1.5px solid var(--ink);
+    padding: 6px 16px calc(6px + env(safe-area-inset-bottom));
+    gap: 12px;
+  }
+  .mobile-nav button {
+    flex: 1;
+    min-height: 44px;
+    border: 0;
+    background: transparent;
+    font-weight: 800;
+    margin: 0;
+    border-radius: 6px;
+  }
+  .mobile-nav [aria-current] {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .tray-bar {
+    bottom: calc(72px + env(safe-area-inset-bottom));
+    box-shadow: 2px 2px 0 var(--gold);
+  }
+  .compare-bar {
+    bottom: calc(150px + env(safe-area-inset-bottom));
+  }
+  .toast {
+    bottom: calc(160px + env(safe-area-inset-bottom));
+  }
+  .menu-foot {
+    padding-bottom: 150px;
+  }
+  .tracking-page {
+    padding-bottom: 160px;
+  }
+  .masthead {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+}
+@media (max-width: 600px) {
+  .detail-actions,
+  .checkout-submit {
+    bottom: 0;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+  .sheet {
+    max-height: 94dvh;
+  }
+  .brand-line {
+    gap: 6px;
+  }
+  .product-name {
+    min-height: 44px;
+  }
+  .search input {
+    font-size: 16px;
+  }
+  .menu-layout {
+    padding-top: 12px;
+  }
+  .section-head {
+    margin: 12px 0;
+  }
+  .menu-tools {
+    padding-bottom: 6px;
+  }
+  .tracking-progress {
+    margin: 12px 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .motion-particle,
+  .motion-copy,
+  .surprise-overlay {
+    display: none !important;
+  }
+}
